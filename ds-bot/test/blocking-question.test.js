@@ -8,8 +8,10 @@ import { fakeContext } from './fake-ctx.js'
 
 const QUESTION = 'ask_user_question'
 const AGENT_TEAMS = ['spawn_teammate', 'wait_agent', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update']
-const DELEGATION = ['subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models', 'send_message', 'interrupt_agent', 'list_agents', 'workflow', 'ralph', ...AGENT_TEAMS]
-const DELEGATION_REFUSAL = 'Bots do not start subagents, teammates or workflows. Do the work yourself, or hand it to another Bot with message_bot.'
+const DELEGATION = ['subagent_codex', 'subagent_claude_code', 'send_message', 'interrupt_agent', 'list_agents', 'workflow', 'ralph', ...AGENT_TEAMS]
+const DELEGATION_REFUSAL = 'Bots do not start teammates, teams or workflows. Do the work yourself, start a subagent for a self-contained piece, or hand it to another Bot with message_bot.'
+// A Bot's own subagents run inside its turn, so the tools stay (see tools.js).
+const SUBAGENTS = ['subagent', 'subagent_fork', 'list_subagent_models']
 
 const team = () => ({
   version: 1,
@@ -228,11 +230,12 @@ test('without DSH\'s goal service a goal change is left alone', async (t) => {
   assert.deepEqual(warnings, [])
 })
 
-// Fei2411/DS-Bot#798: a Bot could call dsh's delegation tools; the child agents they
-// start run out of the user's sight and die with the part that started them.
-test('a Bot\'s chat and its group Sessions lose the delegation tools; other Sessions keep them', async (t) => {
-  const servedDelegation = ['subagent', 'subagent_fork', 'list_subagent_models', 'send_message', 'interrupt_agent', 'list_agents', 'workflow']
-  const { agentFor, hidden, stop } = await setup({ served: ['read', 'ask_user', QUESTION, ...servedDelegation] })
+// Fei2411/DS-Bot#798: the children of dsh's delegation tools run out of the user's sight
+// and die with the part that started them. A Bot's own subagents are the exception: they
+// finish inside its turn, so only the rest is hidden.
+test('a Bot\'s chat and its group Sessions lose the delegation tools but keep their own subagents', async (t) => {
+  const servedDelegation = ['send_message', 'interrupt_agent', 'list_agents', 'workflow']
+  const { agentFor, hidden, stop } = await setup({ served: ['read', 'ask_user', QUESTION, ...SUBAGENTS, ...servedDelegation] })
   t.after(stop)
   for (const id of ['chief', 'writer', 'room-writer', 'plain', 'elsewhere']) await agentFor(id)
   for (const id of ['chief', 'writer', 'room-writer']) assert.deepEqual(hidden.filter(([sessionId]) => sessionId === id), [[id, [QUESTION]], [id, servedDelegation]])
@@ -266,16 +269,16 @@ test('the guard refuses the delegation tools in Bot Sessions only', async (t) =>
 // so each name is masked on its own after the group fails; what stays is covered by
 // the assembly filter and the guard.
 test('a delegation name restrict() cannot mask keeps the other masks and stays refused', async (t) => {
-  const { rt, agentFor, hidden, guard, stop } = await setup({ served: ['read', 'ask_user', QUESTION, 'subagent', 'send_message'], throwOn: 'send_message' })
+  const { rt, agentFor, hidden, guard, stop } = await setup({ served: ['read', 'ask_user', QUESTION, 'list_agents', 'send_message'], throwOn: 'send_message' })
   t.after(stop)
   const warnings = []
   rt.warn = (...args) => warnings.push(args)
   await agentFor('chief')
-  assert.deepEqual(hidden, [['chief', [QUESTION]], ['chief', ['subagent']]])
+  assert.deepEqual(hidden, [['chief', [QUESTION]], ['chief', ['list_agents']]])
   assert.deepEqual(warnings, [])
   // The Session is marked anyway, so resolving it again adds no restrict entries.
   await rt.resolveAgent('chief')
-  assert.deepEqual(hidden, [['chief', [QUESTION]], ['chief', ['subagent']]])
+  assert.deepEqual(hidden, [['chief', [QUESTION]], ['chief', ['list_agents']]])
   assert.equal(guard('send_message', 'chief'), DELEGATION_REFUSAL)
 })
 
@@ -299,14 +302,15 @@ test('Bot Sessions filter the hidden tools and their guidance out of the prompt 
     tools: [{ name: 'read' }, { name: 'subagent' }, { name: 'workflow' }, { name: 'send_message' }, { name: 'message_bot' }, { name: 'ask_user_question' }],
     variables: { a: 1 },
   }))
-  assert.deepEqual(filtered.sections.map(section => section.name), ['bot-identity', 'tool:bash'])
-  assert.deepEqual(filtered.tools.map(tool => tool.name), ['read', 'message_bot'])
+  // A Bot's own subagents stay, tools and guidance both; the teammate and workflow ones go.
+  assert.deepEqual(filtered.sections.map(section => section.name), ['bot-identity', 'tool:subagent', 'tool:bash'])
+  assert.deepEqual(filtered.tools.map(tool => tool.name), ['read', 'subagent', 'message_bot'])
   assert.deepEqual(filtered.contexts, [{ name: 'x' }])
   assert.deepEqual(filtered.variables, { a: 1 })
   // Fei2411/DS-Bot#814: DSH 0.2.2 adds the tool list after this waterfall, so the
   // assembly it passes has none; the guidance is still filtered and no tools appear.
   const current = await filters[0].listener({}, {}, async () => ({
-    sections: [{ name: 'bot-identity' }, { name: 'tool:subagent' }],
+    sections: [{ name: 'bot-identity' }, { name: 'tool:spawn_teammate' }],
     contexts: [],
     variables: {},
   }))
