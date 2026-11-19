@@ -807,7 +807,7 @@ export function TeamSidebar(props) {
         h('span', { className: 'bt-rail-sep', 'aria-hidden': true }))
   // The foot stands in for the shell's hidden footer: the account avatar, and on
   // the rail the new-chat button above it.
-  const pageButtons = h(PanelsButtons, {
+  const pageHub = h(PanelsHub, {
     panels: props.usePanels ? props.usePanels(value => value) : [],
     active: props.useActivePanel ? props.useActivePanel(value => value) : null,
     wide: wideContent,
@@ -816,10 +816,10 @@ export function TeamSidebar(props) {
     select: id => actions.selectPanel(id),
   })
   const foot = wideContent
-    ? h('div', { className: 'bt-leftcol-foot' }, pageButtons, h(AccountLauncher, { seat: false, actions }), h(PluginsButton, { actions }))
+    ? h('div', { className: 'bt-leftcol-foot' }, pageHub, h(AccountLauncher, { seat: false, actions }), h(PluginsButton, { actions }))
     : h('div', { className: 'bt-leftcol-foot bt-leftcol-foot-rail' },
         h('button', { type: 'button', className: 'bt-round', 'aria-label': t('New…'), title: t('New…'), onClick: () => actions.openNewChat('new') }, h(PlusIcon)),
-        pageButtons,
+        pageHub,
         h(AccountLauncher, { seat: false, actions }),
         h(PluginsButton, { actions }))
   const content = h('div', { className: wideContent ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch },
@@ -1238,19 +1238,57 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
   return Glyph ? h(Glyph, { size, active }) : h('span', { style: { width: size, height: size }, 'aria-hidden': true })
 }
 
-export function PanelsButtons({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
-  if (!Array.isArray(panels) || panels.length === 0) return null
-  return panels.map(panel => h('button', {
-    key: panel.id, type: 'button', className: 'bt-account bt-page',
-    'data-active': active === panel.id ? '' : undefined,
-    'aria-pressed': active === panel.id,
-    'aria-label': panel.label,
-    title: panel.label,
-    onClick: () => select(active === panel.id ? null : panel.id),
-  }, h('span', { className: 'bt-you', 'aria-hidden': true },
-    renderSlot === undefined
-      ? h(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs })
-      : renderSlot('sidebar.panellist', { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id }))))
+// The aggregate 「插件页面」 button: closed, it is one round button like the others; open, the
+// pages fan out above-left of it, an L that ends at the 「设置」「插件」 pair sitting beside it in
+// the foot. A click outside, Escape, or a pick closes it.
+// Fan steps, reading the L from its end at the hub button: the first page straight up, the
+// second the corner, the rest along the top toward 「设置」「插件」. Every page is one 36px seat
+// (button + 9px gap), so the L grows leftward and stays an L.
+const HUB_SEAT = 45
+const HUB_STEP = index => (index === 0
+  ? { x: 0, y: -HUB_SEAT }
+  : { x: (index + 1) * HUB_SEAT, y: -HUB_SEAT })
+
+export function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
+  const pages = Array.isArray(panels) ? panels : []
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  useEffect(() => {
+    if (!open) return undefined
+    const away = (event) => {
+      if (rootRef.current?.contains(event.target)) return
+      setOpen(false)
+    }
+    const key = (event) => { if (event.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', away, true)
+    document.addEventListener('keydown', key)
+    return () => { document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', key) }
+  }, [open])
+  // The fan is one absolute layer anchored at the hub button's own box, so the steps hold
+  // whether the foot lays the buttons out in a row or a column.
+  const fan = (panel, index) => {
+    const at = HUB_STEP(index)
+    return h('button', {
+      key: panel.id, type: 'button',
+      className: 'bt-account bt-page',
+      'data-active': active === panel.id ? '' : undefined,
+      'aria-pressed': active === panel.id,
+      'aria-label': panel.label,
+      title: panel.label,
+      tabIndex: open ? 0 : -1,
+      style: { position: 'absolute', left: 0, bottom: 0, transform: `translate(${at.x}px, ${at.y}px) scale(${open ? 1 : 0.4})`, opacity: open ? 1 : 0, pointerEvents: open ? 'auto' : 'none', transition: 'transform .18s cubic-bezier(.2,0,0,1),opacity .14s ease' },
+      onClick: () => { setOpen(false); select(active === panel.id ? null : panel.id) },
+    }, h('span', { className: 'bt-you', 'aria-hidden': true },
+      renderSlot === undefined
+        ? h(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs })
+        : renderSlot('sidebar.panellist', { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id })))
+  }
+  return h('div', { ref: rootRef, className: 'bt-hub', 'data-open': open ? '' : undefined },
+    h('button', {
+      type: 'button', className: 'bt-account bt-hub-toggle', 'aria-haspopup': 'menu', 'aria-expanded': open,
+      'aria-label': t('Plugin pages'), title: t('Plugin pages'), onClick: () => setOpen(value => !value),
+    }, h('span', { className: 'bt-you bt-hub-mark', 'aria-hidden': true }, h(DotsIcon))),
+    pages.map((panel, index) => fan(panel, index)))
 }
 
 export function PluginsButton({ actions }) {
@@ -1305,8 +1343,14 @@ export function BrandName() {
 // FooterAccount only shows when the seat went to no one. The shell's footer classes
 // are CSS-module names, so they match on their stems.
 export const SIDEBAR_CSS = `
-/* The global panels of other plugins share the foot's own row (and the rail's column), styled
-   exactly like 「设置」 and 「插件」; only the pressed state marks the open page. */
+/* The aggregate 「插件页面」 button: one round control in the foot's own row. Its pages fan out
+   from its own box in an L — up, then left — ending beside 「设置」「插件」, which keep their
+   seats in the foot. Only the pressed state marks the open page. */
+.bt-hub{position:relative;display:inline-flex;flex:none}
+.bt-hub-toggle{color:var(--bt-ink-2)}
+.bt-hub-toggle:hover{color:var(--bt-ink)}
+.bt-hub-toggle[aria-expanded=true]{background:var(--bt-hover);color:var(--bt-ink)}
+.bt-hub-mark{line-height:0}
 .bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}

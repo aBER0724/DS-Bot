@@ -17,7 +17,7 @@ const { JSDOM } = createRequire(join(process.env.DSH_HARNESS ?? join(PLUGIN, '..
 // fixtures retain refs across commits and run their layout effects after each render.
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { SHELL_CSS } from './src/client/styles.js'\nexport { SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsButtons } from './src/client/sidebar.js'\nexport { dshCollapsed, installFrameWatch } from './src/client/frame-watch.js'",
+    contents: "export { SHELL_CSS } from './src/client/styles.js'\nexport { SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsHub } from './src/client/sidebar.js'\nexport { dshCollapsed, installFrameWatch } from './src/client/frame-watch.js'",
     resolveDir: PLUGIN,
   },
   bundle: true, format: 'cjs', platform: 'browser', write: false, logLevel: 'silent',
@@ -60,7 +60,7 @@ const sandbox = {
   window: viewport,
 }
 runInNewContext(outputFiles[0].text, sandbox)
-const { SHELL_CSS, SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsButtons, dshCollapsed, installFrameWatch } = module.exports
+const { SHELL_CSS, SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsHub, dshCollapsed, installFrameWatch } = module.exports
 
 function navigationSidebar(wide, { leftDrawer = false } = {}) {
   const calls = []
@@ -860,14 +860,18 @@ test('TeamSidebar leaves an already-collapsed DSH Desktop sidebar alone', async 
 
 // --- the global panels of other plugins -------------------------------------
 
-const panelsRow = ({ panels, active, wide = true }) => {
+const panelsRow = ({ panels, active, wide = true, open = false }) => {
   const calls = []
   const slots = []
-  const tree = PanelsButtons({
+  const states = [open]
+  renderStates = states
+  stateIndex = 0
+  const tree = PanelsHub({
     panels, active, wide,
     renderSlot: (name, props, filter) => { slots.push({ name, props, filter }); return null },
     select: id => { calls.push(id) },
   })
+  renderStates = undefined
   const buttons = []
   const walk = (node) => {
     if (Array.isArray(node)) { node.forEach(walk); return }
@@ -881,32 +885,55 @@ const panelsRow = ({ panels, active, wide = true }) => {
 
 const twoPanels = [{ id: 'schedule', order: 1, label: 'Automation tasks' }, { id: 'plugins', order: 2, label: 'Plugins' }]
 
-test('the page buttons wear the foot\'s own style and open their page through the layout', () => {
+test('closed, the hub is one round button; open, the pages fan an L and open through the layout', () => {
   const row = panelsRow({ panels: twoPanels, active: null })
-  assert.deepEqual(row.buttons.map(button => button.props['aria-label']), ['Automation tasks', 'Plugins'])
-  // The buttons stand in the foot's own row, styled exactly like 「设置」 and 「插件」.
-  assert.deepEqual(row.buttons.map(button => button.props.className), ['bt-account bt-page', 'bt-account bt-page'])
-  assert.ok(row.buttons.every(button => button.props['aria-pressed'] === false))
+  // Closed: the hub button plus a page each, hidden but mounted (their exit animation).
+  const toggle = row.buttons[0]
+  assert.equal(toggle.props.className, 'bt-account bt-hub-toggle')
+  assert.equal(toggle.props['aria-expanded'], false)
+  // The fan sits over the foot, not in its flow.
+  assert.equal(row.tree.props.className, 'bt-hub')
+  assert.ok(row.buttons.slice(1).every(button => button.props.style.pointerEvents === 'none'))
+  // Open: pages fan an L — up from the hub, then leftward along the top.
+  toggle.props.onClick()
+  const openRow = panelsRow({ panels: twoPanels, active: null, open: true })
+  console.log('DBG4 slots:', JSON.stringify(openRow.slots?.slice(0, 2)), 'states:', JSON.stringify(openRow.slots))
+  assert.equal(openRow.buttons[0].props['aria-expanded'], true)
+  const pages = openRow.buttons.slice(1)
+  assert.deepEqual(pages.map(button => button.props['aria-label']), ['Automation tasks', 'Plugins'])
+  // The L: up from the hub, then rightward along the top toward 「设置」「插件」.
+  assert.deepEqual(pages.map(button => button.props.style.transform), [
+    'translate(0px, -45px) scale(1)',
+    'translate(90px, -45px) scale(1)',
+  ])
+  assert.ok(pages.every(button => button.props.style.pointerEvents === 'auto'))
   // The glyph is the plugin's own, rendered through the slot the shell declares.
-  assert.deepEqual(row.slots.map(slot => [slot.name, slot.filter.only, slot.props.size, slot.props.active]), [
+  assert.deepEqual(openRow.slots.map(slot => [slot.name, slot.filter.only, slot.props.size, slot.props.active]), [
     ['sidebar.panellist', 'schedule', 15, false],
     ['sidebar.panellist', 'plugins', 15, false],
   ])
-  row.buttons[0].props.onClick()
-  assert.deepEqual(row.calls, ['schedule'])
+  pages[0].props.onClick()
+  assert.deepEqual(openRow.calls, ['schedule'])
 })
 
-test('the open page is marked, and picking it again returns to the chat', () => {
-  const row = panelsRow({ panels: twoPanels, active: 'plugins' })
-  assert.deepEqual(row.buttons.map(button => button.props['data-active'] !== undefined), [false, true])
+test('the open page is marked, a third page walks the L, and a pick closes the fan', () => {
+  const three = [...twoPanels, { id: 'wiki', order: 3, label: 'Wiki' }]
+  const row = panelsRow({ panels: three, active: 'plugins', open: true })
+  const pages = row.buttons.slice(1)
+  assert.deepEqual(pages.map(button => button.props.style.transform), [
+    'translate(0px, -45px) scale(1)',
+    'translate(90px, -45px) scale(1)',
+    'translate(135px, -45px) scale(1)',
+  ])
+  assert.deepEqual(pages.map(button => button.props['data-active'] !== undefined), [false, true, false])
   assert.equal(row.slots[1].props.active, true)
-  row.buttons[1].props.onClick()
+  pages[1].props.onClick()
   assert.deepEqual(row.calls, [null], 'null is the conversation seat')
 })
 
-test('no registered page draws no button, and the rail keeps its own size', () => {
-  assert.equal(panelsRow({ panels: [], active: null }).tree, null)
-  assert.equal(panelsRow({ panels: undefined, active: null }).tree, null)
-  const rail = panelsRow({ panels: twoPanels, active: null, wide: false })
+test('no registered page draws a hub without pages, and the rail keeps its own glyph size', () => {
+  assert.ok(panelsRow({ panels: [], active: null }).buttons.every(button => button.props['aria-label'] !== 'Automation tasks'))
+  assert.equal(panelsRow({ panels: undefined, active: null }).buttons.length, 1)
+  const rail = panelsRow({ panels: twoPanels, active: null, wide: false, open: true })
   assert.equal(rail.slots[0].props.size, 18)
 })

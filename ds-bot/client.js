@@ -30581,7 +30581,7 @@ function TeamSidebar(props) {
     main ? (0, import_react36.createElement)(BotRow, { ...rowProps, bot: main, marked: markedUnread[main.id] === true }) : roster.ready ? null : bootFailed ? (0, import_react36.createElement)(BootFailed, { actions }) : (0, import_react36.createElement)("div", { className: "bt-hint" }, t("Setting up your Main Bot…")),
     (0, import_react36.createElement)("span", { className: "bt-rail-sep", "aria-hidden": true })
   );
-  const pageButtons = (0, import_react36.createElement)(PanelsButtons, {
+  const pageHub = (0, import_react36.createElement)(PanelsHub, {
     panels: props.usePanels ? props.usePanels((value) => value) : [],
     active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
     wide: wideContent,
@@ -30589,11 +30589,11 @@ function TeamSidebar(props) {
     usePanellistGlyphs: props.usePanellistGlyphs ?? (() => /* @__PURE__ */ new Map()),
     select: (id) => actions.selectPanel(id)
   });
-  const foot = wideContent ? (0, import_react36.createElement)("div", { className: "bt-leftcol-foot" }, pageButtons, (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react36.createElement)(PluginsButton, { actions })) : (0, import_react36.createElement)(
+  const foot = wideContent ? (0, import_react36.createElement)("div", { className: "bt-leftcol-foot" }, pageHub, (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react36.createElement)(PluginsButton, { actions })) : (0, import_react36.createElement)(
     "div",
     { className: "bt-leftcol-foot bt-leftcol-foot-rail" },
     (0, import_react36.createElement)("button", { type: "button", className: "bt-round", "aria-label": t("New…"), title: t("New…"), onClick: () => actions.openNewChat("new") }, (0, import_react36.createElement)(PlusIcon)),
-    pageButtons,
+    pageHub,
     (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }),
     (0, import_react36.createElement)(PluginsButton, { actions })
   );
@@ -31041,22 +31041,64 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
   const Glyph = entries2.get(panel);
   return Glyph ? (0, import_react36.createElement)(Glyph, { size, active }) : (0, import_react36.createElement)("span", { style: { width: size, height: size }, "aria-hidden": true });
 }
-function PanelsButtons({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
-  if (!Array.isArray(panels) || panels.length === 0) return null;
-  return panels.map((panel) => (0, import_react36.createElement)("button", {
-    key: panel.id,
-    type: "button",
-    className: "bt-account bt-page",
-    "data-active": active === panel.id ? "" : void 0,
-    "aria-pressed": active === panel.id,
-    "aria-label": panel.label,
-    title: panel.label,
-    onClick: () => select(active === panel.id ? null : panel.id)
-  }, (0, import_react36.createElement)(
-    "span",
-    { className: "bt-you", "aria-hidden": true },
-    renderSlot === void 0 ? (0, import_react36.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs }) : renderSlot("sidebar.panellist", { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id })
-  )));
+var HUB_SEAT = 45;
+var HUB_STEP = (index) => index === 0 ? { x: 0, y: -HUB_SEAT } : { x: (index + 1) * HUB_SEAT, y: -HUB_SEAT };
+function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
+  const pages = Array.isArray(panels) ? panels : [];
+  const [open, setOpen] = (0, import_react36.useState)(false);
+  const rootRef = (0, import_react36.useRef)(null);
+  (0, import_react36.useEffect)(() => {
+    if (!open) return void 0;
+    const away = (event) => {
+      if (rootRef.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    const key = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away, true);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", away, true);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  const fan = (panel, index) => {
+    const at = HUB_STEP(index);
+    return (0, import_react36.createElement)("button", {
+      key: panel.id,
+      type: "button",
+      className: "bt-account bt-page",
+      "data-active": active === panel.id ? "" : void 0,
+      "aria-pressed": active === panel.id,
+      "aria-label": panel.label,
+      title: panel.label,
+      tabIndex: open ? 0 : -1,
+      style: { position: "absolute", left: 0, bottom: 0, transform: `translate(${at.x}px, ${at.y}px) scale(${open ? 1 : 0.4})`, opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none", transition: "transform .18s cubic-bezier(.2,0,0,1),opacity .14s ease" },
+      onClick: () => {
+        setOpen(false);
+        select(active === panel.id ? null : panel.id);
+      }
+    }, (0, import_react36.createElement)(
+      "span",
+      { className: "bt-you", "aria-hidden": true },
+      renderSlot === void 0 ? (0, import_react36.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs }) : renderSlot("sidebar.panellist", { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id })
+    ));
+  };
+  return (0, import_react36.createElement)(
+    "div",
+    { ref: rootRef, className: "bt-hub", "data-open": open ? "" : void 0 },
+    (0, import_react36.createElement)("button", {
+      type: "button",
+      className: "bt-account bt-hub-toggle",
+      "aria-haspopup": "menu",
+      "aria-expanded": open,
+      "aria-label": t("Plugin pages"),
+      title: t("Plugin pages"),
+      onClick: () => setOpen((value) => !value)
+    }, (0, import_react36.createElement)("span", { className: "bt-you bt-hub-mark", "aria-hidden": true }, (0, import_react36.createElement)(DotsIcon))),
+    pages.map((panel, index) => fan(panel, index))
+  );
 }
 function PluginsButton({ actions }) {
   if (!actions.hasPlugins?.()) return null;
@@ -31104,8 +31146,14 @@ function BrandName() {
   return (0, import_react36.createElement)("span", { style: { fontWeight: 600, fontSize: 14 } }, "DS Bot");
 }
 var SIDEBAR_CSS = `
-/* The global panels of other plugins share the foot's own row (and the rail's column), styled
-   exactly like 「设置」 and 「插件」; only the pressed state marks the open page. */
+/* The aggregate 「插件页面」 button: one round control in the foot's own row. Its pages fan out
+   from its own box in an L — up, then left — ending beside 「设置」「插件」, which keep their
+   seats in the foot. Only the pressed state marks the open page. */
+.bt-hub{position:relative;display:inline-flex;flex:none}
+.bt-hub-toggle{color:var(--bt-ink-2)}
+.bt-hub-toggle:hover{color:var(--bt-ink)}
+.bt-hub-toggle[aria-expanded=true]{background:var(--bt-hover);color:var(--bt-ink)}
+.bt-hub-mark{line-height:0}
 .bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
