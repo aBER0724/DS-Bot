@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DS-Bot-mac-arm64
-          path: dist-pack/DS-Bot-*-mac-arm64.zip
+          path: app/dist-pack/DS-Bot-*-mac-arm64.zip
           retention-days: 14
           if-no-files-found: error
           compression-level: 0
@@ -98,6 +98,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DS-Bot-app-arm64
-          path: dist-pack/mac-arm64/
+          path: app/dist-pack/mac-arm64/
           retention-days: 7
           if-no-files-found: error
