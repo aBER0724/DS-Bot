@@ -34,6 +34,9 @@ OAuth 登录的顺序是定的：目录里写的客户端 → CIMD → DCR → �
 
 `connector-import-scan` 只读扫 Claude Desktop、Cursor、VS Code 的 MCP 配置（不改源文件），返回名称和 env 名；`connector-import` 把 env 值移进 DS Bot 密钥（`CONNECTOR_<ID>_<ENV>`），配置里留 `$DSH_SECRET_` 引用。自定义 id 从名字派生，唯一、≤32 字符、不占目录 id；能力名校验同样拒绝连接器 id。
 
+自己添加的服务器要令牌时，「其他 MCP 服务器 › 地址」的表单里一行一个认证头：左边头名、右边值。值一律写进 DS Bot 密钥（`CONNECTOR_<ID>_HEAD_<头名>`），`state.connectors[id].custom.headers` 只留 `$DSH_SECRET_` 引用，界面上只回名字、不回值。`connector-set({ headers })` 是「改认证头…」：值留空表示保留已存的值，没列出的头连同它的密钥一起删掉；网关每次请求现取头，所以改完不重挂，工具名和 MCP 会话都不动。头名按 HTTP 的 token 规则校验，值里不许有换行——否则网关会把第二行当成另一个头发给上游。DS Bot 的密钥要求值至少 4 个字符，所以更短的头值现在加不进来（比如 `X-Trace: on`）。地址里也可以带 token：导入时 `?token=$TOKEN`／`${TOKEN}`／`$env:TOKEN` 的值搬进密钥，地址只留 `$DSH_SECRET_` 引用，请求时现取；导入配置里没有这个值时保留原样并在日志里点名。
+
+自定义服务器的 401 说的是「token 或认证头不对，去 设置 → 连接器 改」，不再报「需要重新登录」，也不去刷新 token：它没有 OAuth 流程，走那条路只会把用户送到不存在的登录页。
 ## 不做
 
 - 不加 Google 的 Gmail/Drive/Calendar MCP（开发者预览条款），不引入任何厂商 logo。

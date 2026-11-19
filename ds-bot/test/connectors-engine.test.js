@@ -1098,3 +1098,116 @@ test('manual client fallback keeps and closes the original OAuth callback listen
   await rt.connectorEndpoint('connector-cancel', { id: 'notion' })
   assert.equal(first.listener.listening, false)
 })
+
+// --- authentication headers of an added server -----------------------------
+
+// An added server that mounts, so that the tool names and the gateway are real.
+const addedServer = (t) => {
+  const home = teamHome()
+  const ctx = fakeContext()
+  const plugin = { name: 'mcp', apply() {} }
+  ctx.get = name => name === 'loader' ? { import: async () => ({ default: plugin }), unwrapExports: e => e.default } : undefined
+  const list = mounts(ctx)
+  const rt = createRuntime(ctx, { home, github: false })
+  t.after(async () => { await ctx.dispose(); rmSync(home, { recursive: true, force: true }) })
+  return { home, rt, list }
+}
+
+test('an added server keeps its authentication headers as secrets, never in the state', async (t) => {
+  const { home, rt } = addedServer(t)
+  await rt.load(); await rt.loadSecrets()
+  const view = await rt.connectorEndpoint('connector-add', {
+    name: 'Acme', url: 'https://mcp.example.com/mcp',
+    headers: { Authorization: 'Bearer sk-live-1', 'X-Api-Key': 'key-two-abcdef' },
+  })
+  const row = view.connectors.find(entry => entry.custom)
+  assert.deepEqual(row.headerNames.sort(), ['Authorization', 'X-Api-Key'], 'the names come back, the values do not')
+  const saved = rt.state.connectors[row.id].custom.headers
+  assert.equal(saved.Authorization, '$DSH_SECRET_CONNECTOR_ACME_HEAD_AUTHORIZATION')
+  assert.equal(saved['X-Api-Key'], '$DSH_SECRET_CONNECTOR_ACME_HEAD_X_API_KEY')
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_AUTHORIZATION'), 'Bearer sk-live-1')
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_API_KEY'), 'key-two-abcdef')
+  assert.ok(!readFileSync(join(home, 'state.json'), 'utf8').includes('sk-live-1'), 'no credential on disk outside the secrets')
+  assert.ok(!JSON.stringify(row).includes('sk-live-1'), 'no credential in the view')
+  // What the gateway sends upstream.
+  assert.deepEqual(rt.connectorsInternals.upstreamOf(row.id).headers, { Authorization: 'Bearer sk-live-1', 'X-Api-Key': 'key-two-abcdef' })
+})
+
+test('改认证头: an empty value keeps the secret, a header left out takes its secret away', async (t) => {
+  const { rt } = addedServer(t)
+  await rt.load(); await rt.loadSecrets()
+  const view = await rt.connectorEndpoint('connector-add', {
+    name: 'Acme', url: 'https://mcp.example.com/mcp',
+    headers: { Authorization: 'Bearer one', 'X-Api-Key': 'key-two-abcdef' },
+  })
+  const id = view.connectors.find(entry => entry.custom).id
+  // A new token, the key kept as it is, and a third header added.
+  await rt.connectorEndpoint('connector-set', { id, headers: { Authorization: 'Bearer two', 'X-Api-Key': '', 'X-Trace': 'trace-on-value' } })
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_AUTHORIZATION'), 'Bearer two')
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_API_KEY'), 'key-two-abcdef', 'an empty value keeps the one that is set')
+  assert.deepEqual(rt.connectorsInternals.upstreamOf(id).headers, { Authorization: 'Bearer two', 'X-Api-Key': 'key-two-abcdef', 'X-Trace': 'trace-on-value' })
+  // A header left out of the form is removed, and so is its secret.
+  await rt.connectorEndpoint('connector-set', { id, headers: { Authorization: '' } })
+  assert.deepEqual(Object.keys(rt.state.connectors[id].custom.headers), ['Authorization'])
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_API_KEY'), undefined)
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_TRACE'), undefined)
+  // Removing the server takes the last one too.
+  await rt.connectorEndpoint('connector-remove', { id })
+  assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_AUTHORIZATION'), undefined)
+})
+
+test('a header name that is no token, or a value with a line break, is refused', async (t) => {
+  const { rt } = addedServer(t)
+  await rt.load(); await rt.loadSecrets()
+  await assert.rejects(
+    rt.connectorEndpoint('connector-add', { name: 'Broken', url: 'https://mcp.example.com/mcp', headers: { 'X Api Key': 'k' } }),
+    /A header name may use only letters, digits and - _ \./)
+  await assert.rejects(
+    rt.connectorEndpoint('connector-add', { name: 'Broken', url: 'https://mcp.example.com/mcp', headers: { Authorization: 'Bearer a\r\nX-Evil: 1' } }),
+    /A header value must stay on one line/)
+  await assert.rejects(
+    rt.connectorEndpoint('connector-add', { name: 'Short', url: 'https://mcp.example.com/mcp', headers: { 'X-Trace': 'on' } }),
+    /A header value must be at least 4 characters/)
+  // Nothing of a refused add is left behind.
+  assert.equal(Object.values(rt.state.connectors ?? {}).some(entry => entry.custom?.name === 'Broken'), false)
+  const view = await rt.connectorEndpoint('connector-add', { name: 'Plain', url: 'https://mcp.example.com/mcp' })
+  assert.deepEqual(view.connectors.find(entry => entry.custom).headerNames, [], 'a server without headers has none to change')
+  await assert.rejects(rt.connectorEndpoint('connector-set', { id: 'notion', headers: { Authorization: 'x' } }), /Only an added server has authentication headers/)
+})
+
+// --- an added server whose token is wrong, and one whose address carries it ---
+
+test('an added server that answers 401 is an error, not a sign-in', async (t) => {
+  const { rt } = addedServer(t)
+  await rt.load(); await rt.loadSecrets()
+  const view = await rt.connectorEndpoint('connector-add', { name: 'Memoh Desktop', url: 'https://desk.example.com/mcp', headers: { Authorization: 'Bearer old-token' } })
+  const id = view.connectors.find(entry => entry.custom).id
+  // Its headers are static, so a 401 has nothing to refresh.
+  assert.equal(await rt.connectorsInternals.refreshConnector(id), false)
+  const status = rt.connectorsInternals.statuses.get(id)
+  assert.equal(status.state, 'error')
+  assert.match(status.error, /token or headers are wrong/u)
+})
+
+test('an imported address keeps its token as a secret reference and sends the value', async (t) => {
+  const fakeHome = mkdtempSync(join(tmpdir(), 'dsb-fakehome-'))
+  const claude = join(fakeHome, 'Library', 'Application Support', 'Claude')
+  mkdirSync(claude, { recursive: true })
+  writeFileSync(join(claude, 'claude_desktop_config.json'), JSON.stringify({
+    mcpServers: { memoh: { url: 'https://desk.example.com/mcp?token=${MEMOH_TOKEN}', env: { MEMOH_TOKEN: 'tok-imported-1' } } },
+  }))
+  const { home, rt } = addedServer(t)
+  await rt.load(); await rt.loadSecrets()
+  const realHome = process.env.HOME
+  process.env.HOME = fakeHome
+  t.after(() => { process.env.HOME = realHome; rmSync(fakeHome, { recursive: true, force: true }) })
+  const imported = await rt.connectorEndpoint('connector-import', { items: [{ source: 'claude', name: 'memoh' }] })
+  const id = imported.created[0]
+  const saved = rt.state.connectors[id].custom.url
+  assert.match(saved, /token=\$DSH_SECRET_CONNECTOR_MEMOH_MEMOH_TOKEN$/u)
+  assert.ok(!saved.includes('tok-imported-1'), 'no token in the state')
+  assert.equal(rt.secretValue('CONNECTOR_MEMOH_MEMOH_TOKEN'), 'tok-imported-1')
+  // What the gateway sends: the address with the value in it, and never the state's text.
+  assert.equal(rt.connectorsInternals.upstreamOf(id).url, 'https://desk.example.com/mcp?token=tok-imported-1')
+  assert.ok(!readFileSync(join(home, 'state.json'), 'utf8').includes('tok-imported-1'))
+})

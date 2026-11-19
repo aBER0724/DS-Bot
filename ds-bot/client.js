@@ -1614,6 +1614,17 @@ var JA = {
   "Add another": "さらに追加",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud などの IMAP メール",
   "Other MCP server": "その他の MCP サーバー",
+  "Header name": "ヘッダー名",
+  "Remove this header": "このヘッダーを削除",
+  "+ Add a header": "+ ヘッダーを追加",
+  "Change headers…": "認証ヘッダーを変更…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "トークンが必要な場合は、左にヘッダー名、右に値を入れてください。値は DS Bot のシークレットに保管されます。",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "値を空のままにすると、設定済みの値を使います。行を削除したヘッダーは取り除かれます。",
+  "A header name may use only letters, digits and - _ .": "ヘッダー名に使えるのは英数字と - _ . だけです",
+  "A header value must stay on one line": "ヘッダーの値は 1 行にしてください",
+  "A header value must be at least 4 characters": "ヘッダーの値は 4 文字以上にしてください",
+  "The server answered 401: the token or headers are wrong": "サーバーが 401 を返しました。トークンかヘッダーが違います",
+  "Only an added server has authentication headers": "認証ヘッダーがあるのは自分で追加したサーバーだけです",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "URL・コマンドを指定、または Claude Desktop、Cursor、VS Code からインポート",
   "Kind of server": "サーバーの種類",
   "Nothing matches": "一致するコネクタがありません",
@@ -4072,6 +4083,17 @@ var KO = {
   "Add another": "추가 연결",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud 및 기타 IMAP 메일",
   "Other MCP server": "기타 MCP 서버",
+  "Header name": "헤더 이름",
+  "Remove this header": "이 헤더 삭제",
+  "+ Add a header": "+ 헤더 추가",
+  "Change headers…": "인증 헤더 변경…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "토큰이 필요하면 왼쪽에 헤더 이름, 오른쪽에 값을 넣으세요. 값은 DS Bot 시크릿에 보관됩니다.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "값을 비워 두면 설정된 값을 그대로 씁니다. 줄을 지운 헤더는 제거됩니다.",
+  "A header name may use only letters, digits and - _ .": "헤더 이름에는 영문, 숫자, - _ . 만 쓸 수 있습니다",
+  "A header value must stay on one line": "헤더 값은 한 줄이어야 합니다",
+  "A header value must be at least 4 characters": "헤더 값은 4자 이상이어야 합니다",
+  "The server answered 401: the token or headers are wrong": "서버가 401을 돌려줬습니다. 토큰이나 헤더가 잘못되었습니다",
+  "Only an added server has authentication headers": "인증 헤더는 직접 추가한 서버에만 있습니다",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "주소나 명령어를 입력하거나 Claude Desktop, Cursor, VS Code에서 가져오기",
   "Kind of server": "서버 유형",
   "Nothing matches": "일치하는 커넥터 없음",
@@ -6533,6 +6555,17 @@ var ES = {
   "Add another": "Añadir otro",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud y otros correos IMAP",
   "Other MCP server": "Otro servidor MCP",
+  "Header name": "Nombre de la cabecera",
+  "Remove this header": "Quitar esta cabecera",
+  "+ Add a header": "+ Añadir una cabecera",
+  "Change headers…": "Cambiar cabeceras…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "¿Necesita un token? Escribe el nombre de la cabecera y pega su valor; DS Bot lo guarda como secreto.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Deja el valor vacío para mantener el actual. La cabecera que quites se elimina.",
+  "A header name may use only letters, digits and - _ .": "El nombre de la cabecera solo admite letras, dígitos y - _ .",
+  "A header value must stay on one line": "El valor de la cabecera debe caber en una línea",
+  "A header value must be at least 4 characters": "El valor de la cabecera debe tener al menos 4 caracteres",
+  "The server answered 401: the token or headers are wrong": "El servidor respondió 401: el token o las cabeceras no son correctos",
+  "Only an added server has authentication headers": "Solo un servidor añadido tiene cabeceras de autenticación",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Una dirección, un comando o uno de Claude Desktop, Cursor o VS Code",
   "Kind of server": "Tipo de servidor",
   "Nothing matches": "No hay coincidencias",
@@ -8952,6 +8985,17 @@ var FR = {
   "Add another": "En ajouter un autre",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud et autres messageries IMAP",
   "Other MCP server": "Autre serveur MCP",
+  "Header name": "Nom de l'en-tête",
+  "Remove this header": "Retirer cet en-tête",
+  "+ Add a header": "+ Ajouter un en-tête",
+  "Change headers…": "Modifier les en-têtes…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "Besoin d'un jeton ? Indiquez le nom de l'en-tête et collez sa valeur ; DS Bot la garde comme secret.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Laissez une valeur vide pour garder celle qui est définie. Un en-tête retiré est supprimé.",
+  "A header name may use only letters, digits and - _ .": "Le nom d'un en-tête n'accepte que lettres, chiffres et - _ .",
+  "A header value must stay on one line": "La valeur d'un en-tête doit tenir sur une ligne",
+  "A header value must be at least 4 characters": "La valeur d'un en-tête doit faire au moins 4 caractères",
+  "The server answered 401: the token or headers are wrong": "Le serveur a répondu 401 : le jeton ou les en-têtes sont faux",
+  "Only an added server has authentication headers": "Seul un serveur ajouté a des en-têtes d’authentification",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Une adresse, une commande ou une importation depuis Claude Desktop, Cursor ou VS Code",
   "Kind of server": "Type de serveur",
   "Nothing matches": "Aucun connecteur correspondant",
@@ -11410,6 +11454,17 @@ var DE = {
   "Add another": "Weiteres hinzufügen",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud und andere IMAP-Postfächer",
   "Other MCP server": "Anderer MCP-Server",
+  "Header name": "Header-Name",
+  "Remove this header": "Diesen Header entfernen",
+  "+ Add a header": "+ Header hinzufügen",
+  "Change headers…": "Authentifizierungs-Header ändern…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "Token nötig? Header-Namen eintragen und den Wert einfügen; DS Bot speichert ihn als Secret.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Ein leeres Feld behält den gesetzten Wert. Ein entfernter Header wird gelöscht.",
+  "A header name may use only letters, digits and - _ .": "Ein Header-Name darf nur Buchstaben, Ziffern und - _ . enthalten",
+  "A header value must stay on one line": "Ein Header-Wert muss in einer Zeile bleiben",
+  "A header value must be at least 4 characters": "Ein Header-Wert braucht mindestens 4 Zeichen",
+  "The server answered 401: the token or headers are wrong": "Der Server antwortete 401: Token oder Header stimmen nicht",
+  "Only an added server has authentication headers": "Nur ein selbst hinzugefügter Server hat Authentifizierungs-Header",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Adresse, Befehl oder Import aus Claude Desktop, Cursor oder VS Code",
   "Kind of server": "Servertyp",
   "Nothing matches": "Keine passenden Konnektoren",
@@ -13871,6 +13926,17 @@ var ZH = {
   "Add another": "再添加一个",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud 等 IMAP 邮箱",
   "Other MCP server": "其他 MCP 服务器",
+  "Header name": "认证头名",
+  "Remove this header": "删掉这条认证头",
+  "+ Add a header": "+ 再加一条",
+  "Change headers…": "改认证头…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "服务器要令牌就填：左边是头名、右边是值。值存在 DS Bot 密钥里，不写进配置。",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "值留空就保持原来的。删掉一行的头会被移除。",
+  "A header name may use only letters, digits and - _ .": "认证头名只能用字母、数字和 - _ .",
+  "A header value must stay on one line": "认证头的值不能换行",
+  "A header value must be at least 4 characters": "认证头的值至少要 4 个字符",
+  "The server answered 401: the token or headers are wrong": "服务器返回 401：token 或认证头不对",
+  "Only an added server has authentication headers": "只有自己添加的服务器才有认证头",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "填地址或命令，或从 Claude Desktop、Cursor、VS Code 导入",
   "Kind of server": "服务器类型",
   "Nothing matches": "没有匹配的连接器",
@@ -16598,6 +16664,12 @@ button.bt-set-row:hover .bt-chevron{transform:translateX(2px);color:var(--bt-ink
 .bt-connector-aside{align-self:flex-start}
 .bt-connector-error{padding-left:48px;font-size:12px;line-height:16px;color:var(--bt-danger)}
 .bt-connector-banner{padding:0 0 8px}
+.bt-connector-headers-block{display:flex;flex-direction:column;gap:6px}
+.bt-connector-headers{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.bt-connector-header-row{display:flex;align-items:center;gap:6px;width:100%}
+.bt-connector-header-name{flex:0 0 34%;min-width:0}
+.bt-connector-header-value{flex:1 1 0;min-width:0}
+.bt-connector-add-header{align-self:flex-start}
 .bt-mail-form{gap:10px}
 .bt-mail-seg{align-self:flex-start}
 /* Six providers share the width: a label that wraps would leave its fixed-height
@@ -26326,6 +26398,26 @@ var openSignIn = (win, id, view) => {
   }
   win.close();
 };
+function HeadersPanel({ connector, actions, run: run2, onDone }) {
+  const names = connector.headerNames ?? [];
+  const [rows2, setRows] = (0, import_react29.useState)(() => names.length > 0 ? names.map((name) => ({ name, value: "" })) : [{ name: "Authorization", value: "" }]);
+  const save = () => void run2(actions.connectorSet(connector.id, { headers: headerSpecOf(rows2) }), () => {
+    onDone?.();
+  });
+  return (0, import_react29.createElement)(
+    "div",
+    { className: "bt-connector-form" },
+    (0, import_react29.createElement)("span", { className: "bt-set-hint" }, t("Leave a value empty to keep the one that is set. A header you take away is removed.")),
+    (0, import_react29.createElement)(HeaderRows, { rows: rows2, onChange: setRows }),
+    (0, import_react29.createElement)(
+      "div",
+      { className: "bt-connector-form-row" },
+      (0, import_react29.createElement)("span", { className: "bt-connector-wait" }),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: onDone }, t("Cancel")),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: save }, t("Save"))
+    )
+  );
+}
 function ConnectorRow({ connector, actions }) {
   const [form, setForm] = (0, import_react29.useState)(null);
   const [busy, setBusy] = (0, import_react29.useState)(false);
@@ -26366,6 +26458,9 @@ function ConnectorRow({ connector, actions }) {
       (0, import_react29.createElement)("button", { key: "connect", type: "button", className: "bt-soft bt-soft-sm", disabled: busy, onClick: connect }, busy ? t("Connecting…") : t("Connect"))
     ];
   }
+  if (connector.custom === true && !pending && !form && connector.state !== "needs-client") {
+    actionsNode = [button(t("Change headers…"), () => setForm("headers")), ...Array.isArray(actionsNode) ? actionsNode : [actionsNode]];
+  }
   return (0, import_react29.createElement)(
     "div",
     { ref: row, className: "bt-connector", "data-state": connector.state },
@@ -26389,6 +26484,10 @@ function ConnectorRow({ connector, actions }) {
     (0, import_react29.createElement)(SignInPanel, { connector, actions, run: run2, onUseToken: () => setForm("token") }),
     connector.state === "needs-client" && !pending?.kind ? (0, import_react29.createElement)(ClientPanel, { connector, actions, run: run2 }) : null,
     form === "token" ? (0, import_react29.createElement)(TokenPanel, { connector, actions, run: run2, onDone: () => {
+      setForm(null);
+      setError(null);
+    } }) : null,
+    form === "headers" ? (0, import_react29.createElement)(HeadersPanel, { connector, actions, run: run2, onDone: () => {
       setForm(null);
       setError(null);
     } }) : null,
@@ -26615,6 +26714,30 @@ function MailCatalogRow({ mail, actions }) {
     open ? (0, import_react29.createElement)(MailForm, { mail, actions, onClose: () => setOpen(false) }) : null
   );
 }
+function HeaderRows({ rows: rows2, onChange }) {
+  const setRow = (index, patch) => onChange(rows2.map((row, at) => at === index ? { ...row, ...patch } : row));
+  return (0, import_react29.createElement)(
+    "div",
+    { className: "bt-connector-headers" },
+    rows2.map((row, index) => (0, import_react29.createElement)(
+      "div",
+      { key: index, className: "bt-connector-header-row" },
+      (0, import_react29.createElement)("input", { className: "bt-input bt-connector-header-name", "aria-label": t("Header name"), placeholder: "Authorization", value: row.name, spellCheck: false, autoComplete: "off", onChange: (e) => setRow(index, { name: e.target.value }) }),
+      (0, import_react29.createElement)("label", { className: "bt-q-field bt-secret-field bt-connector-header-value" }, (0, import_react29.createElement)(MaskedInput, { value: row.value, onChange: (value) => setRow(index, { value }), label: t("Value") })),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link", "aria-label": t("Remove this header"), onClick: () => onChange(rows2.filter((_, at) => at !== index)) }, t("Remove"))
+    )),
+    (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link bt-connector-add-header", onClick: () => onChange([...rows2, { name: "", value: "" }]) }, t("+ Add a header"))
+  );
+}
+var headerSpecOf = (rows2) => {
+  const spec = {};
+  for (const row of rows2) {
+    const header = row.name.trim();
+    if (header !== "") spec[header] = row.value.trim();
+  }
+  return spec;
+};
+var EMPTY_HEADER = { name: "Authorization", value: "" };
 function AddMenu({ actions, run: run2 }) {
   const [kind, setKind] = (0, import_react29.useState)(null);
   const [name, setName] = (0, import_react29.useState)("");
@@ -26624,11 +26747,13 @@ function AddMenu({ actions, run: run2 }) {
   const [picked, setPicked] = (0, import_react29.useState)([]);
   const row = (0, import_react29.useRef)(null);
   useMorph(row, `${kind}:${found === null}`);
+  const [headers, setHeaders] = (0, import_react29.useState)([EMPTY_HEADER]);
   const reset = () => {
     setKind(null);
     setName("");
     setUrl("");
     setCommand("");
+    setHeaders([EMPTY_HEADER]);
     setFound(null);
     setPicked([]);
   };
@@ -26673,13 +26798,20 @@ function AddMenu({ actions, run: run2 }) {
         (0, import_react29.createElement)(Switch, { label: item.name, on: picked.some((p) => key(p) === key(item)), onChange: (on) => setPicked((list) => on ? [...list, { source: item.source, name: item.name }] : list.filter((p) => key(p) !== key(item))) })
       ))) : [
         (0, import_react29.createElement)("input", { key: "name", className: "bt-input", "aria-label": t("Name"), placeholder: t("Name"), value: name, onChange: (e) => setName(e.target.value) }),
-        kind === "url" ? (0, import_react29.createElement)("input", { key: "url", className: "bt-input", "aria-label": t("Server address"), placeholder: "https://…", value: url, spellCheck: false, onChange: (e) => setUrl(e.target.value) }) : (0, import_react29.createElement)("input", { key: "cmd", className: "bt-input", "aria-label": t("Command"), placeholder: t("Command, e.g. npx -y some-mcp"), value: command, spellCheck: false, onChange: (e) => setCommand(e.target.value) })
+        kind === "url" ? (0, import_react29.createElement)("input", { key: "url", className: "bt-input", "aria-label": t("Server address"), placeholder: "https://…", value: url, spellCheck: false, onChange: (e) => setUrl(e.target.value) }) : (0, import_react29.createElement)("input", { key: "cmd", className: "bt-input", "aria-label": t("Command"), placeholder: t("Command, e.g. npx -y some-mcp"), value: command, spellCheck: false, onChange: (e) => setCommand(e.target.value) }),
+        // A server that needs a token takes it as a header; the value is kept as a secret.
+        kind === "url" ? (0, import_react29.createElement)(
+          "div",
+          { key: "headers", className: "bt-connector-headers-block" },
+          (0, import_react29.createElement)("span", { className: "bt-set-hint" }, t("Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.")),
+          (0, import_react29.createElement)(HeaderRows, { rows: headers, onChange: setHeaders })
+        ) : null
       ],
       (0, import_react29.createElement)(
         "div",
         { className: "bt-secret-row-actions" },
         (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: reset }, t("Cancel")),
-        kind === "import" ? (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: picked.length === 0, onClick: () => void run2(actions.connectorImport(picked), reset) }, t("Import {count}", { count: picked.length })) : (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: !ready, onClick: () => void run2(kind === "url" ? actions.connectorAdd({ name: name.trim(), url: url.trim() }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t("Add"))
+        kind === "import" ? (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: picked.length === 0, onClick: () => void run2(actions.connectorImport(picked), reset) }, t("Import {count}", { count: picked.length })) : (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: !ready, onClick: () => void run2(kind === "url" ? actions.connectorAdd({ name: name.trim(), url: url.trim(), headers: headerSpecOf(headers) }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t("Add"))
       )
     )
   );

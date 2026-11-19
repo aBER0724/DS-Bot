@@ -723,6 +723,12 @@ button.bt-set-row:hover .bt-chevron{transform:translateX(2px);color:var(--bt-ink
 .bt-connector-aside{align-self:flex-start}
 .bt-connector-error{padding-left:48px;font-size:12px;line-height:16px;color:var(--bt-danger)}
 .bt-connector-banner{padding:0 0 8px}
+.bt-connector-headers-block{display:flex;flex-direction:column;gap:6px}
+.bt-connector-headers{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.bt-connector-header-row{display:flex;align-items:center;gap:6px;width:100%}
+.bt-connector-header-name{flex:0 0 34%;min-width:0}
+.bt-connector-header-value{flex:1 1 0;min-width:0}
+.bt-connector-add-header{align-self:flex-start}
 .bt-mail-form{gap:10px}
 .bt-mail-seg{align-self:flex-start}
 /* Six providers share the width: a label that wraps would leave its fixed-height

@@ -22,6 +22,14 @@ const MCP_CLIENT = '@deepseek-ai/dsh-mcp-client'
 const CHECK_TIMEOUT_MS = 15_000
 const SIGN_IN_TIMEOUT_MS = 10 * 60_000
 const SECRET_REF = /\$DSH_SECRET_([A-Z][A-Z0-9_]*)/g
+// A token written into an imported address: `$NAME`, `${NAME}` or `$env:NAME`.
+const URL_PLACEHOLDER = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$env:([A-Za-z_][A-Za-z0-9_]*)|\$([A-Za-z_][A-Za-z0-9_]*)/gu
+const placeholdersIn = (url) => {
+  const names = new Set()
+  for (const match of String(url).matchAll(URL_PLACEHOLDER)) names.add(match[1] ?? match[2] ?? match[3])
+  return names
+}
+const withRefs = (url, refs) => String(url).replace(URL_PLACEHOLDER, (all, braced, env, plain) => refs[braced ?? env ?? plain] ?? all)
 const MAX_REQUESTS = 20
 
 // Asks GitHub who the token belongs to. Any token GitHub accepts passes.
@@ -111,6 +119,9 @@ export function install(rt) {
     if (entry === undefined || !hasCredential(id)) return undefined
     let url = entry.custom?.url ?? entry.remote?.url
     if (url === undefined) return undefined
+    // A URL can carry its token as a secret reference too (an imported `?token=$TOKEN`), so the
+    // token never sits in the connector's state.
+    if (entry.custom !== undefined) url = resolveRefs(url)
     const headers = { ...(entry.headers ?? {}) }
     const cred = credentialOf(id)
     if (entry.auth.kind === 'oauth' && cred !== undefined) Object.assign(headers, cred)
@@ -135,6 +146,11 @@ export function install(rt) {
       credential: upstreamOf,
       readOnly: id => state.connectors?.[id]?.readOnly === true,
       onUnauthorized: id => refreshConnector(id),
+      // An added server has static headers, not an OAuth token: its 401 is a wrong token, and the
+      // Bot has to hear that instead of being sent to a sign-in that does not exist.
+      unauthorizedMessage: id => entryFor(id)?.custom === undefined
+        ? `The ${id} connector needs sign-in again. Call request_connector with id ${id} so the user can sign in, or ask them to sign in under Settings → Connectors.`
+        : `The ${id} connector answered 401: its token or authentication headers are wrong. Ask the user to fix them under Settings → Connectors (Change headers…), or to remove the server and add it again.`,
       log: (...args) => rt.warn(...args),
     })
     await gateways.gw.listen()
@@ -225,9 +241,15 @@ export function install(rt) {
     const kept = await keptSecret(name)
     await rt.secretEndpoint('secret-set', { name, value, purpose, ...(kept ? {} : { scope: [] }) })
   }
+  // A value that keeps a credential is written to DS Bot's secrets and kept as a reference; only
+  // the reference goes into the connector's state.
+  const secretOfRef = (ref) => String(ref ?? '').match(/^\$DSH_SECRET_([A-Z][A-Z0-9_]*)$/)?.[1]
   const dropSecrets = async (id) => {
     await rt.loadSecrets()
-    for (const name of [tokenSecretOf(id), refreshSecretOf(id), clientSecretOf(id), keySecretOf(id)]) {
+    // An added server keeps its headers and its environment in secrets of their own.
+    const added = state.connectors?.[id]?.custom ?? {}
+    const own = [...Object.values(added.headers ?? {}), ...Object.values(added.env ?? {})].map(secretOfRef).filter(name => name !== undefined)
+    for (const name of [tokenSecretOf(id), refreshSecretOf(id), clientSecretOf(id), keySecretOf(id), ...own]) {
       if (id !== 'github' || name === GITHUB_SECRET || name !== tokenSecretOf(id)) {
         if (rt.secretValue(name) !== undefined) await rt.secretEndpoint('secret-delete', { name }).catch(() => {})
       }
@@ -236,6 +258,47 @@ export function install(rt) {
   const saveState = async (id, patch) => {
     state.connectors = { ...(state.connectors ?? {}), [id]: { ...state.connectors?.[id], ...patch } }
     await rt.save()
+  }
+
+  // --- authentication headers of an added server -------------------------
+
+  // A header token as the HTTP grammar allows it; the name also has to fit into a secret name.
+  const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/
+  // What the user typed into 「认证头」, as `{ name: value }`. A value is a credential: it goes into
+  // DS Bot's secrets and the connector keeps `$DSH_SECRET_<name>` only. An empty value keeps the one
+  // that is there, so a token can be changed without retyping the other headers; a header left out
+  // is taken away. A line break in a value would let the gateway send a header of its own.
+  const headerRefs = async (id, name, input, previous = {}) => {
+    const headers = {}
+    for (const [rawName, rawValue] of Object.entries(input ?? {})) {
+      const header = String(rawName ?? '').trim()
+      const value = String(rawValue ?? '')
+      if (header === '') continue
+      if (!HEADER_NAME.test(header)) throw new Error('A header name may use only letters, digits and - _ .')
+      if (value === '') {
+        if (previous[header] !== undefined) headers[header] = previous[header]
+        continue
+      }
+      if (/[\r\n]/.test(value)) throw new Error('A header value must stay on one line')
+      // DS Bot's secrets keep values of at least four characters; say so instead of the key wording.
+      if (value.length < 4) throw new Error('A header value must be at least 4 characters')
+      // A caller that already holds the reference keeps it as it is.
+      if (secretOfRef(value) !== undefined) { headers[header] = value; continue }
+      const secretName = envSecretOf(id, `HEAD_${header}`)
+      await writeSecret(secretName, value, `${name} connector`)
+      headers[header] = `$DSH_SECRET_${secretName}`
+    }
+    return headers
+  }
+  // The secrets of the headers that went away, so that no credential stays behind.
+  const dropUnusedHeaders = async (previous, next) => {
+    await rt.loadSecrets()
+    const kept = new Set(Object.values(next ?? {}))
+    for (const ref of Object.values(previous ?? {})) {
+      const secretName = secretOfRef(ref)
+      if (secretName === undefined || kept.has(ref)) continue
+      if (rt.secretValue(secretName) !== undefined) await rt.secretEndpoint('secret-delete', { name: secretName }).catch(() => {})
+    }
   }
 
   // --- OAuth sign-in ----------------------------------------------------
@@ -418,6 +481,13 @@ export function install(rt) {
     if (refreshes.has(id)) return refreshes.get(id)
     const job = (async () => {
       const saved = state.connectors?.[id]
+      // An added server carries static headers and has no token to refresh: a 401 means one of
+      // them is wrong, and asking for a sign-in would send the user nowhere.
+      if (entryFor(id)?.custom !== undefined) {
+        statuses.set(id, { state: 'error', error: 'The server answered 401: the token or headers are wrong' })
+        rt.warn('ds-bot: connector %s answered 401; its headers are static, so there is no refresh', id)
+        return false
+      }
       const readOnly = rt.readOnly()
       if (readOnly !== undefined) {
         await rt.loadSecrets()
@@ -638,7 +708,8 @@ export function install(rt) {
       ...(remote && connected && (entry.auth.kind === 'oauth' || entry.auth.kind === 'key') ? { readOnly: saved?.readOnly === true } : {}),
       offFor: saved?.offFor ?? [],
       tools: gateways.gw?.toolCount?.(entry.id) ?? 0,
-      ...(entry.custom !== undefined ? { custom: true } : {}),
+      // The names only: the values are secrets and never leave the host. 「改认证头…」 asks with them.
+      ...(entry.custom !== undefined ? { custom: true, headerNames: Object.keys(entry.custom.headers ?? {}) } : {}),
       ...(pendings.has(entry.id) ? { pending: pendings.get(entry.id).row } : {}),
     }
   }
@@ -745,7 +816,18 @@ export function install(rt) {
       const patch = {}
       if (body.readOnly !== undefined) patch.readOnly = body.readOnly === true
       if (Array.isArray(body.offFor)) patch.offFor = [...new Set(body.offFor.filter(id => rt.botOf(id) !== undefined))]
+      // 「改认证头…」: an empty value keeps the header's secret; a header left out is removed, and
+      // its secret with it.
+      let headers
+      if (body.headers !== undefined) {
+        if (entry.custom === undefined) throw new Error('Only an added server has authentication headers')
+        headers = await headerRefs(entry.id, entry.name, body.headers, entry.custom.headers ?? {})
+        patch.custom = { ...entry.custom, headers }
+      }
       await saveState(entry.id, patch)
+      // The gateway resolves the headers of each request, so the new ones apply without a new
+      // mount: the tool names and the MCP session stay as they are.
+      if (headers !== undefined) await dropUnusedHeaders(entry.custom.headers ?? {}, headers)
       rt.reapplyToolMasks?.()
       return connectorsView()
     },
@@ -759,8 +841,9 @@ export function install(rt) {
       const taken = new Set(Object.keys(state.connectors ?? {}))
       const id = customId(name, taken)
       CONNECTOR_IDS.add(id)
+      // The address form's 「认证头」 rows: a value goes into secrets, never into the state.
       const custom = url !== undefined
-        ? { name, url, headers: body.headers && typeof body.headers === 'object' ? body.headers : {} }
+        ? { name, url, headers: await headerRefs(id, name, body.headers && typeof body.headers === 'object' ? body.headers : {}) }
         : { name, command, args: Array.isArray(body.args) ? body.args.map(String) : [], env: body.env && typeof body.env === 'object' ? body.env : {} }
       await saveState(id, { custom, connectedAt: Date.now() })
       await sync(true)
@@ -783,7 +866,20 @@ export function install(rt) {
         const id = customId(name, taken)
         const custom = { name }
         if (typeof spec.url === 'string' || typeof spec.serverUrl === 'string') {
-          custom.url = spec.url ?? spec.serverUrl
+          const address = spec.url ?? spec.serverUrl
+          // An address can carry its token as `?token=$TOKEN`; the value goes into a secret and the
+          // address keeps only the reference, so the token never lands in the state.
+          const values = { ...(spec.env ?? {}), ...(spec.headers ?? {}) }
+          const refs = {}
+          const unresolved = []
+          for (const envName of placeholdersIn(address)) {
+            if (values[envName] === undefined) { unresolved.push(envName); continue }
+            const secretName = envSecretOf(id, envName)
+            await writeSecret(secretName, String(values[envName]), `${name} connector`)
+            refs[envName] = `$DSH_SECRET_${secretName}`
+          }
+          if (unresolved.length > 0) rt.warn('ds-bot: connector %s keeps %s in its address; the imported config had no value for it', id, unresolved.join(', '))
+          custom.url = withRefs(address, refs)
           custom.headers = {}
           for (const [header, raw] of Object.entries(spec.headers ?? {})) {
             const secretName = envSecretOf(id, `HEAD_${header}`)

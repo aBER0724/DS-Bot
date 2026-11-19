@@ -131,6 +131,22 @@ export const openSignIn = (win, id, view) => {
   win.close()
 }
 
+// 「改认证头…」: the headers of an added server. Their values are secrets on the host and do not
+// come back, so each row starts empty: an empty value keeps the one that is set, and a header whose
+// row was taken away is removed.
+function HeadersPanel({ connector, actions, run, onDone }) {
+  const names = connector.headerNames ?? []
+  const [rows, setRows] = useState(() => (names.length > 0 ? names.map(name => ({ name, value: '' })) : [{ name: 'Authorization', value: '' }]))
+  const save = () => void run(actions.connectorSet(connector.id, { headers: headerSpecOf(rows) }), () => { onDone?.() })
+  return h('div', { className: 'bt-connector-form' },
+    h('span', { className: 'bt-set-hint' }, t('Leave a value empty to keep the one that is set. A header you take away is removed.')),
+    h(HeaderRows, { rows, onChange: setRows }),
+    h('div', { className: 'bt-connector-form-row' },
+      h('span', { className: 'bt-connector-wait' }),
+      h('button', { type: 'button', className: 'bt-soft bt-soft-sm', onClick: onDone }, t('Cancel')),
+      h('button', { type: 'button', className: 'bt-soft bt-soft-sm', onClick: save }, t('Save'))))
+}
+
 export function ConnectorRow({ connector, actions }) {
   const [form, setForm] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -167,6 +183,11 @@ export function ConnectorRow({ connector, actions }) {
       h('button', { key: 'connect', type: 'button', className: 'bt-soft bt-soft-sm', disabled: busy, onClick: connect }, busy ? t('Connecting…') : t('Connect')),
     ]
   }
+  // An added server's headers can be changed without adding it again; the values stay secrets, so
+  // the form starts from the header names only.
+  if (connector.custom === true && !pending && !form && connector.state !== 'needs-client') {
+    actionsNode = [button(t('Change headers…'), () => setForm('headers')), ...(Array.isArray(actionsNode) ? actionsNode : [actionsNode])]
+  }
   return h('div', { ref: row, className: 'bt-connector', 'data-state': connector.state },
     h('div', { className: 'bt-connector-head' },
       h('span', { className: 'bt-connector-mark' }, h(ConnectorMark, { connector })),
@@ -179,6 +200,7 @@ export function ConnectorRow({ connector, actions }) {
     h(SignInPanel, { connector, actions, run, onUseToken: () => setForm('token') }),
     connector.state === 'needs-client' && !pending?.kind ? h(ClientPanel, { connector, actions, run }) : null,
     form === 'token' ? h(TokenPanel, { connector, actions, run, onDone: () => { setForm(null); setError(null) } }) : null,
+    form === 'headers' ? h(HeadersPanel, { connector, actions, run, onDone: () => { setForm(null); setError(null) } }) : null,
     error ? h('div', { className: 'bt-connector-error', role: 'alert' }, hostText(error)) : null)
 }
 
@@ -348,6 +370,32 @@ export function MailCatalogRow({ mail, actions }) {
     open ? h(MailForm, { mail, actions, onClose: () => setOpen(false) }) : null)
 }
 
+// The 「认证头」 rows of a server that needs a token: a name and a value. The value is a
+// credential: the host keeps it in DS Bot's secrets and never sends it back, so a row of
+// 「改认证头…」 starts empty, where an empty value keeps the one that is set.
+function HeaderRows({ rows, onChange }) {
+  const setRow = (index, patch) => onChange(rows.map((row, at) => (at === index ? { ...row, ...patch } : row)))
+  return h('div', { className: 'bt-connector-headers' },
+    rows.map((row, index) => h('div', { key: index, className: 'bt-connector-header-row' },
+      h('input', { className: 'bt-input bt-connector-header-name', 'aria-label': t('Header name'), placeholder: 'Authorization', value: row.name, spellCheck: false, autoComplete: 'off', onChange: e => setRow(index, { name: e.target.value }) }),
+      h('label', { className: 'bt-q-field bt-secret-field bt-connector-header-value' }, h(MaskedInput, { value: row.value, onChange: value => setRow(index, { value }), label: t('Value') })),
+      h('button', { type: 'button', className: 'bt-connector-link', 'aria-label': t('Remove this header'), onClick: () => onChange(rows.filter((_, at) => at !== index)) }, t('Remove')))),
+    h('button', { type: 'button', className: 'bt-connector-link bt-connector-add-header', onClick: () => onChange([...rows, { name: '', value: '' }]) }, t('+ Add a header')))
+}
+
+// What the host gets: the rows with a name and a value; a row with an empty value is no header of
+// its own (in 「改认证头…」 it keeps the value that is set).
+const headerSpecOf = (rows) => {
+  const spec = {}
+  for (const row of rows) {
+    const header = row.name.trim()
+    if (header !== '') spec[header] = row.value.trim()
+  }
+  return spec
+}
+
+const EMPTY_HEADER = { name: 'Authorization', value: '' }
+
 // Your own MCP servers: an address, a command, or ones found in other apps.
 export function AddMenu({ actions, run }) {
   const [kind, setKind] = useState(null)
@@ -358,7 +406,9 @@ export function AddMenu({ actions, run }) {
   const [picked, setPicked] = useState([])
   const row = useRef(null)
   useMorph(row, `${kind}:${found === null}`)
-  const reset = () => { setKind(null); setName(''); setUrl(''); setCommand(''); setFound(null); setPicked([]) }
+  // The 「认证头」 rows of an address; they start with the one most servers ask for.
+  const [headers, setHeaders] = useState([EMPTY_HEADER])
+  const reset = () => { setKind(null); setName(''); setUrl(''); setCommand(''); setHeaders([EMPTY_HEADER]); setFound(null); setPicked([]) }
   const choose = (next) => {
     setKind(next)
     if (next === 'import' && found === null) void Promise.resolve(actions.connectorImportScan()).then(list => setFound(Array.isArray(list) ? list : list?.items ?? []), () => setFound([]))
@@ -388,12 +438,18 @@ export function AddMenu({ actions, run }) {
           kind === 'url'
             ? h('input', { key: 'url', className: 'bt-input', 'aria-label': t('Server address'), placeholder: 'https://…', value: url, spellCheck: false, onChange: e => setUrl(e.target.value) })
             : h('input', { key: 'cmd', className: 'bt-input', 'aria-label': t('Command'), placeholder: t('Command, e.g. npx -y some-mcp'), value: command, spellCheck: false, onChange: e => setCommand(e.target.value) }),
+          // A server that needs a token takes it as a header; the value is kept as a secret.
+          kind === 'url'
+            ? h('div', { key: 'headers', className: 'bt-connector-headers-block' },
+              h('span', { className: 'bt-set-hint' }, t('Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.')),
+              h(HeaderRows, { rows: headers, onChange: setHeaders }))
+            : null,
         ],
       h('div', { className: 'bt-secret-row-actions' },
         h('button', { type: 'button', className: 'bt-soft bt-soft-sm', onClick: reset }, t('Cancel')),
         kind === 'import'
           ? h('button', { type: 'button', className: 'bt-soft bt-soft-sm', disabled: picked.length === 0, onClick: () => void run(actions.connectorImport(picked), reset) }, t('Import {count}', { count: picked.length }))
-          : h('button', { type: 'button', className: 'bt-soft bt-soft-sm', disabled: !ready, onClick: () => void run(kind === 'url' ? actions.connectorAdd({ name: name.trim(), url: url.trim() }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t('Add')))))
+          : h('button', { type: 'button', className: 'bt-soft bt-soft-sm', disabled: !ready, onClick: () => void run(kind === 'url' ? actions.connectorAdd({ name: name.trim(), url: url.trim(), headers: headerSpecOf(headers) }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t('Add')))))
 }
 
 // Bot details → Connectors: one switch per connected connector (default on).

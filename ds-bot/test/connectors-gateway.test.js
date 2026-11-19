@@ -123,3 +123,30 @@ test('gateway preserves MCP POST headers and bodies and reports expired sessions
   assert.match(JSON.stringify(logs), /notion.*POST.*404/)
   assert.equal(JSON.stringify(logs).includes('private-'), false)
 })
+
+test('a 401 from an added server says its token is wrong, not that a sign-in is needed', async (t) => {
+  const upstream = createServer((req, res) => {
+    req.resume()
+    req.on('end', () => { res.writeHead(401); res.end() })
+  })
+  await new Promise(resolve => upstream.listen(0, '127.0.0.1', resolve))
+  t.after(() => upstream.close())
+  const gw = createGateway({
+    credential: () => ({ url: `http://127.0.0.1:${upstream.address().port}/mcp`, headers: {} }),
+    readOnly: () => false,
+    onUnauthorized: async () => false,
+    unauthorizedMessage: id => `The ${id} connector answered 401: its token or authentication headers are wrong.`,
+  })
+  await gw.listen()
+  t.after(() => gw.close())
+  const response = await fetch(gw.urlFor('memoh-desktop'), {
+    method: 'POST',
+    headers: { ...gw.headers(), accept: 'application/json, text/event-stream', 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'say' } }),
+  })
+  assert.equal(response.status, 200)
+  const answer = await response.json()
+  assert.equal(answer.id, 9)
+  assert.match(answer.error.message, /memoh-desktop connector answered 401: its token or authentication headers are wrong/u)
+  assert.doesNotMatch(answer.error.message, /sign-in/u)
+})

@@ -44,7 +44,11 @@ const readAll = stream => new Promise((resolve, reject) => {
   stream.on('error', reject)
 })
 
-export function createGateway({ credential, readOnly, onUnauthorized, log = () => {} }) {
+// `unauthorizedMessage` is what a Bot hears when a 401 survives the retry: a service that signs in
+// needs a new sign-in, while an added server with static headers has a wrong token and no sign-in.
+const signInMessage = id => `The ${id} connector needs sign-in again. Call request_connector with id ${id} so the user can sign in, or ask them to sign in under Settings → Connectors.`
+
+export function createGateway({ credential, readOnly, onUnauthorized, unauthorizedMessage = signInMessage, log = () => {} }) {
   const nonce = randomBytes(24).toString('base64url')
   let server = null
   let port = 0
@@ -73,8 +77,8 @@ export function createGateway({ credential, readOnly, onUnauthorized, log = () =
     error: { code: -32600, message: `The ${id} connector is read-only: this tool can change things, so it is off. Turn off the read-only switch in Settings → Connectors to use it.` },
   })
 
-  // A 401 that survives the refresh: answer the JSON-RPC request with a reason
-  // the Bot can act on, instead of an empty HTTP error.
+  // A 401 that survives the retry: answer the JSON-RPC request with a reason the
+  // Bot can act on, instead of an empty HTTP error.
   const signInAgain = (id, body, upstream, res) => {
     let rpc
     try { rpc = JSON.parse(body?.toString('utf8') ?? '') } catch { return false }
@@ -83,7 +87,7 @@ export function createGateway({ credential, readOnly, onUnauthorized, log = () =
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(JSON.stringify({
       jsonrpc: '2.0', id: rpc.id,
-      error: { code: -32001, message: `The ${id} connector needs sign-in again. Call request_connector with id ${id} so the user can sign in, or ask them to sign in under Settings → Connectors.` },
+      error: { code: -32001, message: unauthorizedMessage(id) },
     }))
     return true
   }

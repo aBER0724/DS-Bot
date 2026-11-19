@@ -15,7 +15,7 @@ const { JSDOM } = createRequire(join(process.env.DSH_HARNESS ?? join(PLUGIN, '..
 // stable because the tree expands the same way every pass.
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { MailCatalogRow, MailToolCell } from './src/client/connectors.js'\nexport { ConnectorsPage } from './src/client/connectors-page.js'",
+    contents: "export { MailCatalogRow, MailToolCell, AddMenu, ConnectorRow } from './src/client/connectors.js'\nexport { ConnectorsPage } from './src/client/connectors-page.js'",
     resolveDir: PLUGIN,
   },
   bundle: true, format: 'cjs', platform: 'browser', write: false, logLevel: 'silent',
@@ -66,7 +66,7 @@ runInNewContext(outputFiles[0].text, {
   window: { matchMedia: () => ({ matches: false }), dshDesktop: {}, open: (url) => { opened.push(url); return null } },
   require: name => (name === 'react' ? react : name === 'react-dom' ? { createPortal: node => node } : {}),
 })
-const { MailCatalogRow, MailToolCell, ConnectorsPage } = module.exports
+const { MailCatalogRow, MailToolCell, AddMenu, ConnectorRow, ConnectorsPage } = module.exports
 const render = () => { active = () => expand(MailCatalogRow(props)); rerender() }
 const renderCell = (cellProps) => { slots.length = 0; active = () => expand(MailToolCell(cellProps)); rerender() }
 
@@ -337,4 +337,75 @@ test('a sign-in found after a reload is drawn once, and a browser sign-in says w
   slots.length = 0
   renderPage(pageWith(github({ state: 'connecting', pending: { kind: 'browser', url: 'https://github.com/login/oauth' } })))
   assert.equal(pageText().split('Finish signing in in your browser.').length - 1, 1)
+})
+
+// --- the 「认证头」 rows of the add form and of 「改认证头…」 -------------------
+
+// Fill the n-th input with that label: a server can have several headers.
+const fillAt = (label, index, value) => {
+  const list = collect(node => node.type === 'input' && node.props?.['aria-label'] === label)
+  const input = list[index]
+  assert.ok(input, `input "${label}" #${String(index + 1)}`)
+  input.props.onChange?.({ target: { value } })
+}
+
+const renderAdd = (actions) => {
+  slots.length = 0
+  active = () => expand(AddMenu({ actions, run: (task, after) => Promise.resolve(task).then(value => after?.(value)) }))
+  rerender()
+}
+
+const renderConnectorRow = (connector, actions) => {
+  slots.length = 0
+  active = () => expand(ConnectorRow({ connector, actions }))
+  rerender()
+}
+
+test('the add form sends the authentication headers it took, and a removed row is not sent', async () => {
+  const adds = []
+  const actions = { connectorAdd: (spec) => { adds.push(spec); return Promise.resolve({ connectors: [] }) } }
+  renderAdd(actions)
+  click('Add')
+  fill('Name', 'Acme')
+  fill('Server address', 'https://mcp.example.com/mcp')
+  // One row is there already, and the server needs a second header.
+  fillAt('Header name', 0, 'Authorization')
+  fillAt('Value', 0, 'Bearer one')
+  click('+ Add a header')
+  fillAt('Header name', 1, 'X-Api-Key')
+  fillAt('Value', 1, 'key-two')
+  click('Add')
+  await flush()
+  // The page runs in its own context, so its objects come back as plain JSON first.
+  assert.deepEqual(JSON.parse(JSON.stringify(adds)), [{ name: 'Acme', url: 'https://mcp.example.com/mcp', headers: { Authorization: 'Bearer one', 'X-Api-Key': 'key-two' } }])
+
+  // A row that is taken away before 〔Add〕 is not sent at all.
+  click('Add')
+  fill('Name', 'Solo')
+  fill('Server address', 'https://mcp.example.com/solo')
+  fillAt('Header name', 0, 'X-Drop')
+  fillAt('Value', 0, 'dropped')
+  click('+ Add a header')
+  fillAt('Header name', 1, 'Authorization')
+  fillAt('Value', 1, 'Bearer two')
+  click('Remove')
+  click('Add')
+  await flush()
+  assert.deepEqual(JSON.parse(JSON.stringify(adds[1])), { name: 'Solo', url: 'https://mcp.example.com/solo', headers: { Authorization: 'Bearer two' } })
+})
+
+test('改认证头… shows only the names and sends what was typed, an empty value keeping the secret', async () => {
+  const sets = []
+  const actions = { connectorSet: (id, patch) => { sets.push({ id, patch }); return Promise.resolve({ connectors: [] }) } }
+  const connector = { id: 'acme', name: 'Acme', custom: true, state: 'ready', headerNames: ['Authorization', 'X-Api-Key'] }
+  renderConnectorRow(connector, actions)
+  click('Change headers…')
+  // The values live in secrets and do not come back: both rows start empty.
+  const values = collect(node => node.type === 'input' && node.props?.['aria-label'] === 'Value')
+  assert.equal(values.length, 2)
+  assert.ok(values.every(input => input.props.value === ''))
+  fillAt('Value', 0, 'Bearer two')
+  click('Save')
+  await flush()
+  assert.deepEqual(JSON.parse(JSON.stringify(sets)), [{ id: 'acme', patch: { headers: { Authorization: 'Bearer two', 'X-Api-Key': '' } } }])
 })
