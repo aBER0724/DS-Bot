@@ -74,3 +74,4 @@
 | [移动端客户端 API](2026-10-24-mobile-api.md) | 自己画界面的客户端（手机）用的接口：握手和版本、群聊条目、提醒和补发、头像按引用取、直接改记忆、单个 Bot 的用量 |
 | [Office 文档](2026-10-27-office-documents.md) | Bot 离线处理 .docx/.pptx/.xlsx：应用带的 payload、`office.js` 命令行、office 路由换成带 `office-tools` 的版本 |
 | [连接器](2026-11-04-connectors.md) | 通用连接器引擎、OAuth、网关、邮箱 |
+| [连远端的 DSH Web](2026-11-17-desktop-remote.md) | 桌面应用显示另一台机器上的团队：地址从 `DS_BOT_REMOTE` 或托盘里的「远程 DSH Web…」来，存在 `userData/remote.json`；本机不起 Host、不选位置；启动地址换 cookie 后只用普通地址；填错不退回本机 |

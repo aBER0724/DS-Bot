@@ -22,6 +22,8 @@ import { hostPort } from './host-port.mjs'
 import { captureStdio, LogFile } from './logs.mjs'
 import { Pickers } from './picker-host.mjs'
 import { currentRootOf, driveOf, formatBytes, freeSpace, isEmptyTree, pickFrom, placeOf, rootOf, runningLow } from './place.mjs'
+import { readRemote, remoteOf, remoteWanted, saveRemote } from './remote.mjs'
+import { createRemoteAddressWindow } from './remote-window.mjs'
 import { createShell, SHELL_TEXT } from './shell.mjs'
 import { readStartFrame, writeStartFrame } from './start-frame.mjs'
 import { explainOf, StartWindow } from './start-window.mjs'
@@ -76,6 +78,8 @@ const material = materialOf(process.platform, release())
 configureIdentity(app)
 if (process.env.DS_BOT_SHELL_DATA) app.setPath('userData', process.env.DS_BOT_SHELL_DATA)
 const frameFile = join(app.getPath('userData'), 'start-frame.json')
+// The address of the remote DSH Web the user filled in at the tray, when there is one.
+const remoteFile = join(app.getPath('userData'), 'remote.json')
 
 // Loaded once the start window is up (loadModules).
 let BotBrowserGuests, partitionOf, BotViews, isBotId, importFromBrowser, listSources, applyCookies, CookieImports, parseCookieFile
@@ -93,6 +97,14 @@ let rawOutput
 let host
 // The Host's loopback origin, which the window loads.
 let origin
+// The DSH Web this app shows instead of its own Host: another machine runs the Host then, and
+// nothing of it is kept here (docs/plans/2026-11-17-desktop-remote.md).
+let remote
+// The first load of a remote DSH Web came through, so its launch address is spent and the plain
+// address, carried by the session's cookie, is the way back.
+let remoteCame = false
+// The window that takes the address of a remote DSH Web (remote-window.mjs).
+let addressWin
 let port
 let hostStop
 let updates
@@ -169,9 +181,11 @@ const shell = createShell({
   // A tray entry's Stop (or Stop all) goes back to the page, which owns the actions.
   computer: (kind, botId) => { mainWindow?.webContents.send(IPC.computerAction, { kind, botId }) },
   busy: () => copying !== undefined,
+  // The tray's 「远程 DSH Web…」: the address the app shows instead of its own Host.
+  remote: () => { void openRemoteAddress() },
   // Before the first run has chosen its places there is no window to show, and before the
   // first load of the Host there is no address to load.
-  ready: () => places !== undefined && origin !== undefined && bootstrap !== undefined,
+  ready: () => origin !== undefined && bootstrap !== undefined && (remote !== undefined || places !== undefined),
   // The one-time notice is a card in the team window; a page that cannot show it lets the window
   // go to the tray, which is what the notice would have said.
   // A second close while the card is up brings the window, and so the card, to the front.
@@ -212,6 +226,8 @@ if (canonical !== undefined) {
     onClose: () => { app.quit() },
     // 「换个位置…」: a first start picks the place again; a later start moves the data there.
     onPick: () => {
+      // A remote DSH Web keeps its data on its own machine: there is no place here to pick.
+      if (remote !== undefined) return
       // The question about a shadowing plugin copy has to be answered first.
       if (asked === 'shadowed') return
       // On the import card and the cards of its own picker, the import picks the place itself.
@@ -262,14 +278,17 @@ function stopHost() {
   return hostStop
 }
 
-// A throwaway run (DS_BOT_HOME) asks nothing and shows what a later start shows.
-const startKind = () => (process.env.DS_BOT_HOME || existsSync(join(app.getPath('userData'), 'locations.json')) ? 'later' : 'first')
+// A throwaway run (DS_BOT_HOME) and a remote DSH Web ask nothing and show what a later start shows.
+const startKind = () => (process.env.DS_BOT_HOME || remoteWanted() || existsSync(remoteFile) || existsSync(join(app.getPath('userData'), 'locations.json')) ? 'later' : 'first')
 
 async function start() {
   setMenu()
   nativeTheme.themeSource = readStartFrame(frameFile).themeSource
   // A packaged app has the icon in its bundle; Electron's own run shows Electron's.
   if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(iconFile)
+  // Before the windows: the address decides the origin the team window loads and whether this
+  // machine starts a Host at all. DS_BOT_REMOTE wins over the address filled in at the tray.
+  remote = remoteOf(process.env.DS_BOT_REMOTE) ?? remoteOf(readRemote(remoteFile))
   await prepare()
   run()
 }
@@ -277,7 +296,10 @@ async function start() {
 // What the boot needs; a retry after a failure here does what is still missing.
 async function prepare() {
   // Before the windows: the team window's page is told the Host's origin.
-  if (port === undefined) {
+  // A remote DSH Web is the origin the team window belongs to; this machine starts no Host then,
+  // and so keeps no port of its own.
+  if (remote !== undefined) origin = remote.origin
+  else if (port === undefined) {
     port = await hostPort(join(app.getPath('userData'), 'host-port.json'))
     origin = `http://127.0.0.1:${String(port)}`
   }
@@ -401,8 +423,9 @@ async function until(check, signal) {
 }
 
 // The data folder (with the first run's question on a first start), the engine, then the team
-// view in the hidden team window.
+// view in the hidden team window. A remote DSH Web brings its own data and its own engine.
 async function boot(mine) {
+  if (remote !== undefined) { await bootRemote(mine); return }
   if (places === undefined) {
     const first = startWindow.kind === 'first'
     if (first) {
@@ -437,6 +460,35 @@ async function boot(mine) {
     if (mine === attempt) hostReady = true
     return true
   }).catch(() => false)
+}
+
+// The team of a remote DSH Web: the window loads that Host's page, whose Bots, Sessions and data
+// stay on its own machine. The start goes through the same steps as its own Host's, so an address
+// that does not answer fails the start with its reason.
+async function bootRemote(mine) {
+  startWindow.done('data')
+  startWindow.done('engine')
+  await mainCreated
+  if (mine !== attempt || mainWindow === undefined) return
+  startWindow.teamLoading()
+  hostReady = false
+  const win = mainWindow
+  bootstrap = loadRemote(win).then(() => true).catch(() => false)
+  const came = await bootstrap
+  if (mine !== attempt) return
+  if (!came) throw new Error(`DS Bot: the remote DSH Web did not answer: ${remote.root}. Its launch address is good for one load; take a fresh one from dsh web.`)
+  hostReady = true
+}
+
+// The remote page: its launch address carries the token once and becomes that Host's cookie; every
+// later window comes back with the plain address, which the cookie carries.
+async function loadRemote(win) {
+  if (!remoteCame && remote.url !== remote.root) {
+    await win.loadURL(remote.url)
+    remoteCame = true
+    return
+  }
+  await win.loadURL(remote.root)
 }
 
 function setPlaces(next) {
@@ -809,11 +861,13 @@ function handleIpc() {
   ipcMain.on(IPC.effects, (event, tier) => { if (fromWindow(event)) writeStartFrame(frameFile, { effects: tier }) })
   ipcMain.handle(IPC.dataLocation, (event) => {
     assertWindow(event)
+    // A remote DSH Web keeps its data on its own machine, and nothing here moves it.
+    if (remote !== undefined) return { path: remote.origin, fixed: true }
     return { path: places.dataDir, fixed }
   })
   ipcMain.handle(IPC.moveData, (event, workspace) => {
     assertWindow(event)
-    return fixed ? false : moveData(typeof workspace === 'string' && isAbsolute(workspace) ? workspace : places.workspace)
+    return fixed || remote !== undefined ? false : moveData(typeof workspace === 'string' && isAbsolute(workspace) ? workspace : places.workspace)
   })
   // ds-bot's Bot browsers: one webview per lease, in the storage of the Bot's key.
   ipcMain.handle(IPC.browserAcquire, (event, key) => {
@@ -1410,6 +1464,12 @@ function rebuildWindow() {
 // cookie; the later ones use the plain address, which that cookie carries. The launch URL is
 // used again only when no browser carried it at all, so that a token is never spent twice.
 async function connectHost(win) {
+  // A remote DSH Web is its own Host: the page comes from the address and keeps its own cookie.
+  if (remote !== undefined) {
+    await loadRemote(win)
+    hostReady = true
+    return
+  }
   if (hostReady) { await win.loadURL(`${origin}/`); return }
   // The first load of the Host decides how this window comes in.
   if (bootstrap !== undefined) await bootstrap
@@ -1500,6 +1560,41 @@ function fromWindow(event) {
 
 function openOutside(url) {
   if (/^https?:\/\//iu.test(url)) void electronShell.openExternal(url)
+}
+
+// The tray's 「远程 DSH Web…」: the address of the DSH Web to show instead of this app's own Host,
+// or 「改用本机」 for that Host again. The answer decides the whole start (no Host, no data folder,
+// another origin), so it is kept and the app starts once more
+// (docs/plans/2026-11-17-desktop-remote.md).
+async function openRemoteAddress() {
+  const answer = await addressWindow().ask({
+    value: remote?.root ?? readRemote(remoteFile) ?? '',
+    // The window it belongs to: the start window while that one shows (also its failure page),
+    // else the team window when it is on screen.
+    parent: startWindow?.owner?.() ?? (mainWindow?.isVisible() ? mainWindow : undefined),
+    dark: nativeTheme.shouldUseDarkColors,
+    // A typo keeps the window open and says what is wrong with the address.
+    check: (text) => {
+      // An empty field is 「改用本机」, which the window's own button also sends.
+      try { return { url: remoteOf(text)?.url ?? '' } } catch (error) { return { error: error?.code === 'scheme' ? 'scheme' : 'address' } }
+    },
+  })
+  if (answer === undefined) return
+  let next
+  try {
+    next = remoteOf(answer)
+  } catch { return }
+  // The same address again changes nothing: there is nothing to start again for.
+  if ((next?.url ?? '') === (remote?.url ?? '')) return
+  if (!saveRemote(remoteFile, next?.url ?? '')) return
+  app.relaunch()
+  app.quit()
+}
+
+// The address window is made once: its two channels are taken for the app's whole life.
+function addressWindow() {
+  addressWin ??= createRemoteAddressWindow({ BrowserWindow, ipcMain, preload: join(here, 'remote-preload.cjs'), labels: shellText, log: logs ?? console })
+  return addressWin
 }
 
 // The start window shows the failure page and stays. A new version may fix what keeps this one

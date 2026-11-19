@@ -14,7 +14,7 @@
  * }} options the mark, the tooltip and the two entries of the menu
  * @returns {{ tray: object, relabel: () => void, setComputer: (entries: object[]) => void, dispose: () => void }}
  */
-export function createTray({ Tray, Menu, platform, image, tooltip, open, quit, computer, log = console }) {
+export function createTray({ Tray, Menu, platform, image, tooltip, open, quit, remote, computer, log = console }) {
   const tray = new Tray(image)
   let disposed = false
   let entries = []
@@ -29,6 +29,7 @@ export function createTray({ Tray, Menu, platform, image, tooltip, open, quit, c
     })
     tray.setContextMenu(Menu.buildFromTemplate([
       { label: open.label, click: () => { open.run() } },
+      ...(remote === undefined ? [] : [{ label: remote.label, click: () => { remote.run() } }]),
       ...(rows.length > 0 ? [{ type: 'separator' }, ...rows] : []),
       { type: 'separator' },
       { label: quit.label, click: () => { quit.run() } },

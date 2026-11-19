@@ -22,6 +22,7 @@ npm installs `ds-bot` from `../ds-bot` as a copy of its package files (`install-
 | `DS_BOT_WORKSPACE` | With `DS_BOT_HOME`: the team workspace | `bot/workspace` in the data location |
 | `DS_BOT_SHELL_DATA` | The app's own data (window, Chromium storage, the Bot browsers' logins, `locations.json`) | Electron's `userData` (Windows: `%APPDATA%\DS Bot`; macOS: `~/Library/Application Support/DS Bot`) |
 | `DS_BOT_UPDATE_URL` | Windows and a Linux AppImage: a folder URL with `latest.yml` / `latest-linux.yml` and the installer. macOS and a Linux deb: a URL returning a JSON list like GitHub's `releases` API; a release counts only when this machine's package is attached. Prereleases count only for prerelease installs (see [Updates](#updates)). With `DS_BOT_HOME`, the app checks only when this is set | The newest GitHub release |
+| `DS_BOT_REMOTE` | The address of a remote DSH Web (`dsh web` prints it, launch token and all). The window then shows that machine's team, and this one starts no Host and keeps no data. It wins over the address kept by the tray's 「Remote DSH Web…」 | The app's own Host |
 
 Existing installations keep their shell data, browser logins and saved locations in place. New installations use the DS Bot directory. A saved team workspace keeps its path; only a new workspace defaults to `~/DS Bot`.
 
@@ -160,6 +161,7 @@ The launch URL of the Host is good for one use only. When the first load never c
 | `src/session-check.mjs` | Which chats the pinned DSH refuses because a newer DSH wrote them |
 | `src/first-run.mjs` | The first start's places (the defaults, the saved ones, the folder picker of 「换个位置…」), its offer to import, and the texts of the data move |
 | `src/place.mjs` | The place line of the start page (drive, free space) and the root rule of a picked folder |
+| `src/remote.mjs`, `src/remote-window.mjs`, `src/remote-preload.cjs` | A remote DSH Web instead of the app's own Host (`DS_BOT_REMOTE` and the tray's 「Remote DSH Web…」): the address in its launch form and its plain form, the file the address is kept in, and the small window with one field that takes it. The address window checks the address and says what is wrong, then saves it and starts the app again ([the design](../docs/plans/2026-11-17-desktop-remote.md)) |
 | `src/import.mjs` | The import of a Bot team from the user's DSH |
 | `src/move-data.mjs` | The move of the data location: which folders can take it, and the copy through a staging folder |
 | `src/updates.mjs` | The self-updates (Windows installer, Linux AppImage) and the release-page checks (macOS, Linux deb) |
