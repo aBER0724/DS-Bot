@@ -885,7 +885,7 @@ const panelsRow = ({ panels, active, wide = true, open = false }) => {
 
 const twoPanels = [{ id: 'schedule', order: 1, label: 'Automation tasks' }, { id: 'plugins', order: 2, label: 'Plugins' }]
 
-test('closed, the hub is one round button; open, the pages fan an L and open through the layout', () => {
+test('closed, the hub is one round button; open, the pages fan a column and open through the layout', () => {
   const row = panelsRow({ panels: twoPanels, active: null })
   // Closed: the hub button plus a page each, hidden but mounted (their exit animation).
   const toggle = row.buttons[0]
@@ -901,10 +901,10 @@ test('closed, the hub is one round button; open, the pages fan an L and open thr
   assert.equal(openRow.buttons[0].props['aria-expanded'], true)
   const pages = openRow.buttons.slice(1)
   assert.deepEqual(pages.map(button => button.props['aria-label']), ['Automation tasks', 'Plugins'])
-  // The L: up from the hub, then rightward along the top toward 「设置」「插件」.
+  // The fan is a column: every page straight up from the hub.
   assert.deepEqual(pages.map(button => button.props.style.transform), [
     'translate(0px, -45px) scale(1)',
-    'translate(90px, -45px) scale(1)',
+    'translate(0px, -90px) scale(1)',
   ])
   assert.ok(pages.every(button => button.props.style.pointerEvents === 'auto'))
   // The glyph is the plugin's own, rendered through the slot the shell declares.
@@ -916,14 +916,14 @@ test('closed, the hub is one round button; open, the pages fan an L and open thr
   assert.deepEqual(openRow.calls, ['schedule'])
 })
 
-test('the open page is marked, a third page walks the L, and a pick closes the fan', () => {
+test('the open page is marked, a third page takes the third seat, and a pick closes the fan', () => {
   const three = [...twoPanels, { id: 'wiki', order: 3, label: 'Wiki' }]
   const row = panelsRow({ panels: three, active: 'plugins', open: true })
   const pages = row.buttons.slice(1)
   assert.deepEqual(pages.map(button => button.props.style.transform), [
     'translate(0px, -45px) scale(1)',
-    'translate(90px, -45px) scale(1)',
-    'translate(135px, -45px) scale(1)',
+    'translate(0px, -90px) scale(1)',
+    'translate(0px, -135px) scale(1)',
   ])
   assert.deepEqual(pages.map(button => button.props['data-active'] !== undefined), [false, true, false])
   assert.equal(row.slots[1].props.active, true)

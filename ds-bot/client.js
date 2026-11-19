@@ -31042,7 +31042,7 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
   return Glyph ? (0, import_react36.createElement)(Glyph, { size, active }) : (0, import_react36.createElement)("span", { style: { width: size, height: size }, "aria-hidden": true });
 }
 var HUB_SEAT = 45;
-var HUB_STEP = (index) => index === 0 ? { x: 0, y: -HUB_SEAT } : { x: (index + 1) * HUB_SEAT, y: -HUB_SEAT };
+var HUB_STEP = (index) => ({ x: 0, y: -(index + 1) * HUB_SEAT });
 function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
   const pages = Array.isArray(panels) ? panels : [];
   const [open, setOpen] = (0, import_react36.useState)(false);

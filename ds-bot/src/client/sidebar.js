@@ -1241,13 +1241,10 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
 // The aggregate 「插件页面」 button: closed, it is one round button like the others; open, the
 // pages fan out above-left of it, an L that ends at the 「设置」「插件」 pair sitting beside it in
 // the foot. A click outside, Escape, or a pick closes it.
-// Fan steps, reading the L from its end at the hub button: the first page straight up, the
-// second the corner, the rest along the top toward 「设置」「插件」. Every page is one 36px seat
-// (button + 9px gap), so the L grows leftward and stays an L.
+// Fan steps: every page straight up from the hub button, one 36px seat (button + 9px gap)
+// per row, so the column grows upward.
 const HUB_SEAT = 45
-const HUB_STEP = index => (index === 0
-  ? { x: 0, y: -HUB_SEAT }
-  : { x: (index + 1) * HUB_SEAT, y: -HUB_SEAT })
+const HUB_STEP = index => ({ x: 0, y: -(index + 1) * HUB_SEAT })
 
 export function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
   const pages = Array.isArray(panels) ? panels : []
@@ -1264,8 +1261,8 @@ export function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs
     document.addEventListener('keydown', key)
     return () => { document.removeEventListener('pointerdown', away, true); document.removeEventListener('keydown', key) }
   }, [open])
-  // The fan is one absolute layer anchored at the hub button's own box, so the steps hold
-  // whether the foot lays the buttons out in a row or a column.
+  // The fan is one absolute layer anchored at the hub button's own box: a column growing
+  // upward from it.
   const fan = (panel, index) => {
     const at = HUB_STEP(index)
     return h('button', {
