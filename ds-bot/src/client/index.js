@@ -72,7 +72,7 @@ import { installMotionRest } from './motion-rest.js'
 import { agentSessionToReuse, singleFlight } from './agent-new.js'
 import { TextSelectionAction, ANNOTATION_CSS } from './text-annotation.js'
 
-export const inject = ['sessions', 'uiWorkspace', 'uiConversation', 'slots', 'theme', 'layout']
+export const inject = ['sessions', 'uiWorkspace', 'uiConversation', 'slots', 'theme', 'layout', 'locale']
 
 export function apply(ctx) {
   ctx.effect(() => installLocale(ctx.get('locale')), 'ds-bot: interface copy')
@@ -682,7 +682,10 @@ export function apply(ctx) {
       const target = bot && currentPart(bot) !== last.sessionId ? currentPart(bot) : partFor(id)
       show(target)
     },
-    selectPanel: (id) => { ctx.layout.selectPanel(id) },
+    selectPanel: (id) => {
+      ctx.layout.selectPanel(id)
+      activePanel.set(id ?? null)
+    },
     toggleSidebar: () => { ctx.layout.toggleSidebar() },
     // The left column's own preference: 'open', 'rail' or 'hidden'. The switch
     // remembers the shown one it hid; a drag sets the open column's width.
@@ -962,11 +965,16 @@ export function apply(ctx) {
   // holds their icons, so a page that DS Bot does not draw itself still has an entry.
   const panelLabel = (label) => (typeof label === 'function' ? label() : label) ?? ''
   const panelRows = () => {
-    const entries = ctx.slots.entriesOfSlot?.('sidebar.panellist') ?? ctx.slots.entries?.('sidebar.panellist') ?? []
-    return entries
-      .map(({ options }) => ({ id: String(options?.id ?? ''), order: Number(options?.order ?? 0), label: panelLabel(options?.label) }))
-      .filter(row => row.id !== '')
-      .sort((a, b) => a.order - b.order)
+    try {
+      const entries = ctx.slots.entriesOfSlot?.('sidebar.panellist') ?? ctx.slots.entries?.('sidebar.panellist') ?? []
+      return entries
+        .map(({ options }) => ({ id: String(options?.id ?? ''), order: Number(options?.order ?? 0), label: panelLabel(options?.label) }))
+        .filter(row => row.id !== '')
+        .sort((a, b) => a.order - b.order)
+    } catch (error) {
+      noteClientError(error, 'panels')
+      return []
+    }
   }
   const panels = createSource(panelRows())
   const syncPanels = () => {
@@ -975,16 +983,41 @@ export function apply(ctx) {
     panels.set(previous.length === next.length && previous.every((row, index) => row.id === next[index].id && row.order === next[index].order && row.label === next[index].label) ? previous : next)
   }
   ctx.effect(() => {
-    const offs = [ctx.slots.subscribe('sidebar.panellist', syncPanels)]
-    const locale = ctx.locale
-    if (typeof locale?.subscribe === 'function') offs.push(locale.subscribe(syncPanels))
-    syncPanels()
+    const offs = []
+    try {
+      offs.push(ctx.slots.subscribe('sidebar.panellist', syncPanels))
+      if (typeof ctx.locale?.subscribe === 'function') offs.push(ctx.locale.subscribe(syncPanels))
+      syncPanels()
+    } catch (error) {
+      noteClientError(error, 'panels')
+    }
     return () => { for (const off of offs) off?.() }
   }, 'ds-bot: panel entries')
   // Which page the layout shows: null is the conversation. The layout owns it, so DS Bot reads it
-  // rather than keeping a copy that a plugin could desynchronise.
-  const activePanel = createSource(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null)
-  ctx.effect(() => ctx.layout.panelInfo.subscribe(() => { activePanel.set(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null) }), 'ds-bot: active panel')
+  // rather than keeping a copy a plugin could desynchronise; picking a row writes it here at once,
+  // because a stale highlight is worse than a missed update.
+  const activePanel = createSource(null)
+  const readPanel = () => {
+    try {
+      const info = ctx.layout?.panelInfo
+      const next = info?.getSnapshot?.()?.activePanelId ?? null
+      activePanel.set(next)
+      return info
+    } catch (error) {
+      noteClientError(error, 'panels')
+      return undefined
+    }
+  }
+  ctx.effect(() => {
+    try {
+      const info = readPanel()
+      if (info === undefined || typeof info.subscribe !== 'function') return undefined
+      return info.subscribe(() => { readPanel() })
+    } catch (error) {
+      noteClientError(error, 'panels')
+      return undefined
+    }
+  }, 'ds-bot: active panel')
   const face = () => ({ actions, hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } })
   // Since DSH 0.2.1-alpha.3 user text is drawn by rules and a content factory, not the
   // primitives' text projection; the user's bubble draws with either (user-message.js).

@@ -45578,7 +45578,7 @@ var ANNOTATION_CSS = `
 `;
 
 // src/client/index.js
-var inject = ["sessions", "uiWorkspace", "uiConversation", "slots", "theme", "layout"];
+var inject = ["sessions", "uiWorkspace", "uiConversation", "slots", "theme", "layout", "locale"];
 function apply(ctx) {
   ctx.effect(() => installLocale(ctx.get("locale")), "ds-bot: interface copy");
   migrateStorage();
@@ -46178,6 +46178,7 @@ function apply(ctx) {
     },
     selectPanel: (id) => {
       ctx.layout.selectPanel(id);
+      activePanel.set(id ?? null);
     },
     toggleSidebar: () => {
       ctx.layout.toggleSidebar();
@@ -46441,8 +46442,13 @@ function apply(ctx) {
   }
   const panelLabel = (label) => (typeof label === "function" ? label() : label) ?? "";
   const panelRows = () => {
-    const entries2 = ctx.slots.entriesOfSlot?.("sidebar.panellist") ?? ctx.slots.entries?.("sidebar.panellist") ?? [];
-    return entries2.map(({ options }) => ({ id: String(options?.id ?? ""), order: Number(options?.order ?? 0), label: panelLabel(options?.label) })).filter((row) => row.id !== "").sort((a, b) => a.order - b.order);
+    try {
+      const entries2 = ctx.slots.entriesOfSlot?.("sidebar.panellist") ?? ctx.slots.entries?.("sidebar.panellist") ?? [];
+      return entries2.map(({ options }) => ({ id: String(options?.id ?? ""), order: Number(options?.order ?? 0), label: panelLabel(options?.label) })).filter((row) => row.id !== "").sort((a, b) => a.order - b.order);
+    } catch (error) {
+      noteClientError(error, "panels");
+      return [];
+    }
   };
   const panels = createSource(panelRows());
   const syncPanels = () => {
@@ -46451,18 +46457,42 @@ function apply(ctx) {
     panels.set(previous.length === next.length && previous.every((row, index) => row.id === next[index].id && row.order === next[index].order && row.label === next[index].label) ? previous : next);
   };
   ctx.effect(() => {
-    const offs = [ctx.slots.subscribe("sidebar.panellist", syncPanels)];
-    const locale = ctx.locale;
-    if (typeof locale?.subscribe === "function") offs.push(locale.subscribe(syncPanels));
-    syncPanels();
+    const offs = [];
+    try {
+      offs.push(ctx.slots.subscribe("sidebar.panellist", syncPanels));
+      if (typeof ctx.locale?.subscribe === "function") offs.push(ctx.locale.subscribe(syncPanels));
+      syncPanels();
+    } catch (error) {
+      noteClientError(error, "panels");
+    }
     return () => {
       for (const off of offs) off?.();
     };
   }, "ds-bot: panel entries");
-  const activePanel = createSource(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null);
-  ctx.effect(() => ctx.layout.panelInfo.subscribe(() => {
-    activePanel.set(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null);
-  }), "ds-bot: active panel");
+  const activePanel = createSource(null);
+  const readPanel = () => {
+    try {
+      const info = ctx.layout?.panelInfo;
+      const next = info?.getSnapshot?.()?.activePanelId ?? null;
+      activePanel.set(next);
+      return info;
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  };
+  ctx.effect(() => {
+    try {
+      const info = readPanel();
+      if (info === void 0 || typeof info.subscribe !== "function") return void 0;
+      return info.subscribe(() => {
+        readPanel();
+      });
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  }, "ds-bot: active panel");
   const face = () => ({ actions, hooks: { roster, ui: ui2, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } });
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === "function";
   ctx.effect(() => installCommandActions(ctx, { roster, actions }), "ds-bot: bot command actions");
