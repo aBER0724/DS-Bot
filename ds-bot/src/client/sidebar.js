@@ -818,6 +818,7 @@ export function TeamSidebar(props) {
     active: props.useActivePanel ? props.useActivePanel(value => value) : null,
     wide: wideContent,
     renderSlot: props.renderSlot,
+    usePanellistEntries: props.usePanellistGlyphs ?? (() => new Map()),
     select: id => actions.selectPanel(id),
   })
   const content = h('div', { className: wideContent ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch },
@@ -1229,7 +1230,15 @@ function useLandOnMainBot(roster, useSessions, actions) {
 // The shell's global panels (DSH's `sidebar.panellist`): one icon per page another plugin
 // registered, drawn by that plugin through the slot. Picking the open one goes back to the chat,
 // which is what the layout's `null` means.
-export function PanelsRow({ panels, active, wide, renderSlot, select }) {
+// One page's icon: the component that registered itself in `sidebar.panellist`, read live so a
+// plugin reload swaps the glyph. No entry, no glyph.
+function PanelsGlyph({ panel, size, active, useEntries }) {
+  const entries = useEntries(value => value)
+  const Glyph = entries.get(panel)
+  return Glyph ? h(Glyph, { size, active }) : h('span', { style: { width: size, height: size }, 'aria-hidden': true })
+}
+
+export function PanelsRow({ panels, active, wide, renderSlot, usePanellistEntries, select }) {
   if (!Array.isArray(panels) || panels.length === 0) return null
   return h('div', { className: wide ? 'bt-panels' : 'bt-panels bt-panels-rail', role: 'group', 'aria-label': t('Plugin pages') },
     panels.map(panel => h('button', {
@@ -1240,7 +1249,9 @@ export function PanelsRow({ panels, active, wide, renderSlot, select }) {
       title: panel.label,
       onClick: () => select(active === panel.id ? null : panel.id),
     }, h('span', { className: 'bt-page-glyph', 'aria-hidden': true },
-      renderSlot?.('sidebar.panellist', { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })))))
+      renderSlot === undefined
+        ? h(PanelsGlyph, { panel: panel.id, size: wide ? 16 : 18, active: active === panel.id, useEntries: usePanellistEntries })
+        : renderSlot('sidebar.panellist', { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })))))
 }
 
 export function PluginsButton({ actions }) {

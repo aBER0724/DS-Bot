@@ -30593,6 +30593,7 @@ function TeamSidebar(props) {
     active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
     wide: wideContent,
     renderSlot: props.renderSlot,
+    usePanellistEntries: props.usePanellistGlyphs ?? (() => EMPTY_GLYPHS),
     select: (id) => actions.selectPanel(id)
   });
   const content = (0, import_react36.createElement)(
@@ -31035,7 +31036,12 @@ function useLandOnMainBot(roster, useSessions, actions) {
     return () => clearTimeout(timer);
   }, [mainView, roster]);
 }
-function PanelsRow({ panels, active, wide, renderSlot, select }) {
+function PanelsGlyph({ panel, size, active, useEntries }) {
+  const entries2 = useEntries((value) => value);
+  const Glyph = entries2.get(panel);
+  return Glyph ? (0, import_react36.createElement)(Glyph, { size, active }) : (0, import_react36.createElement)("span", { style: { width: size, height: size }, "aria-hidden": true });
+}
+function PanelsRow({ panels, active, wide, renderSlot, usePanellistEntries, select }) {
   if (!Array.isArray(panels) || panels.length === 0) return null;
   return (0, import_react36.createElement)(
     "div",
@@ -31052,7 +31058,7 @@ function PanelsRow({ panels, active, wide, renderSlot, select }) {
     }, (0, import_react36.createElement)(
       "span",
       { className: "bt-page-glyph", "aria-hidden": true },
-      renderSlot?.("sidebar.panellist", { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })
+      renderSlot === void 0 ? (0, import_react36.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 16 : 18, active: active === panel.id, useEntries: usePanellistEntries }) : renderSlot("sidebar.panellist", { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })
     )))
   );
 }
@@ -46471,6 +46477,29 @@ function apply(ctx) {
       for (const off of offs) off?.();
     };
   }, "ds-bot: panel entries");
+  const glyphs = createSource(/* @__PURE__ */ new Map());
+  const syncGlyphs = () => {
+    const map = /* @__PURE__ */ new Map();
+    try {
+      for (const entry of ctx.slots.entries("sidebar.panellist")) {
+        const key = String(entry.options?.id ?? "");
+        if (key !== "") map.set(key, entry.component);
+      }
+    } catch (error) {
+      noteClientError(error, "panels");
+    }
+    glyphs.set(map);
+  };
+  ctx.effect(() => {
+    try {
+      const off = ctx.slots.subscribe("sidebar.panellist", syncGlyphs);
+      syncGlyphs();
+      return off;
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  }, "ds-bot: panel glyphs");
   const activePanel = createSource(null);
   const readPanel = () => {
     try {
@@ -46495,7 +46524,10 @@ function apply(ctx) {
       return void 0;
     }
   }, "ds-bot: active panel");
-  const face = () => ({ actions, hooks: { roster, ui: ui2, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } });
+  const face = () => ({
+    actions,
+    hooks: { roster, ui: ui2, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel, panellistGlyphs: glyphs }
+  });
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === "function";
   ctx.effect(() => installCommandActions(ctx, { roster, actions }), "ds-bot: bot command actions");
   ctx.effect(() => {
@@ -46738,7 +46770,16 @@ function apply(ctx) {
     () => installFrameWatch(frame),
     () => installFrameSync(),
     () => installTheme(),
-    () => shadow("sidebar.workspaces", { priority: BOT_PRIORITY, inject: face }, TeamSidebar),
+    () => {
+      let declared = false;
+      try {
+        declared = ctx.slots.spec?.("sidebar.panellist") !== void 0;
+      } catch {
+        declared = false;
+      }
+      const children = declared ? void 0 : { "sidebar.panellist": { kind: "list", scope: "root" } };
+      return shadow("sidebar.workspaces", { priority: BOT_PRIORITY, inject: face, ...children ? { children } : {} }, TeamSidebar);
+    },
     () => shadow("sidebar.brand.mark", { priority: BOT_PRIORITY }, BrandMark),
     () => shadow("sidebar.brand.name", { priority: BOT_PRIORITY }, BrandName),
     () => shadow("sidebar.footer.action", { id: "bot-account", order: -200, inject: face }, FooterAccount),

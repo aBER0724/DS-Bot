@@ -993,6 +993,32 @@ export function apply(ctx) {
     }
     return () => { for (const off of offs) off?.() }
   }, 'ds-bot: panel entries')
+  // The glyphs behind those rows: the component each registration carries, keyed by its id. The
+  // sidebar reads this when its own entry did not claim the child slot (DSH's shell declares it
+  // first), because a registration may only render slots it declares itself.
+  const glyphs = createSource(new Map())
+  const syncGlyphs = () => {
+    const map = new Map()
+    try {
+      for (const entry of ctx.slots.entries('sidebar.panellist')) {
+        const key = String(entry.options?.id ?? '')
+        if (key !== '') map.set(key, entry.component)
+      }
+    } catch (error) {
+      noteClientError(error, 'panels')
+    }
+    glyphs.set(map)
+  }
+  ctx.effect(() => {
+    try {
+      const off = ctx.slots.subscribe('sidebar.panellist', syncGlyphs)
+      syncGlyphs()
+      return off
+    } catch (error) {
+      noteClientError(error, 'panels')
+      return undefined
+    }
+  }, 'ds-bot: panel glyphs')
   // Which page the layout shows: null is the conversation. The layout owns it, so DS Bot reads it
   // rather than keeping a copy a plugin could desynchronise; picking a row writes it here at once,
   // because a stale highlight is worse than a missed update.
@@ -1018,7 +1044,10 @@ export function apply(ctx) {
       return undefined
     }
   }, 'ds-bot: active panel')
-  const face = () => ({ actions, hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } })
+  const face = () => ({
+    actions,
+    hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel, panellistGlyphs: glyphs },
+  })
   // Since DSH 0.2.1-alpha.3 user text is drawn by rules and a content factory, not the
   // primitives' text projection; the user's bubble draws with either (user-message.js).
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === 'function'
@@ -1278,13 +1307,24 @@ export function apply(ctx) {
       for (const off of offs) off()
     }
   }
+  // The page buttons draw each panel's own icon through the slot it registered, so the sidebar
+  // registration declares that child (renderSlot comes from the entry's own `children`). The
+  // declaration must be claimed once: DSH's shell declares the same child, and a second claim
+  // throws and takes the whole shell down with it. DSH's shell sits below DS Bot's, so DS Bot
+  // skips the declaration when it is already taken, and TeamSidebar then reads the icons'
+  // bindings from the inject face instead.
   const installShell = () => [
     () => { shellSheets += 1; return () => { shellSheets -= 1 } },
     ...SHELL_SHEETS.map(([text, tag]) => () => installCompiledStyles(text, tag)),
     () => installFrameWatch(frame),
     () => installFrameSync(),
     () => installTheme(),
-    () => shadow('sidebar.workspaces', { priority: BOT_PRIORITY, inject: face }, TeamSidebar),
+    () => {
+      let declared = false
+      try { declared = ctx.slots.spec?.('sidebar.panellist') !== undefined } catch { declared = false }
+      const children = declared ? undefined : { 'sidebar.panellist': { kind: 'list', scope: 'root' } }
+      return shadow('sidebar.workspaces', { priority: BOT_PRIORITY, inject: face, ...(children ? { children } : {}) }, TeamSidebar)
+    },
     () => shadow('sidebar.brand.mark', { priority: BOT_PRIORITY }, BrandMark),
     () => shadow('sidebar.brand.name', { priority: BOT_PRIORITY }, BrandName),
     () => shadow('sidebar.footer.action', { id: 'bot-account', order: -200, inject: face }, FooterAccount),
