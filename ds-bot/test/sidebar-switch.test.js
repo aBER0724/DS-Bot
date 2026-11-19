@@ -885,6 +885,8 @@ test('the panel row draws one glyph per registered page and opens it through the
   const row = panelsRow({ panels: twoPanels, active: null })
   assert.equal(row.tree.props['aria-label'], 'Plugin pages')
   assert.deepEqual(row.buttons.map(button => button.props['aria-label']), ['Automation tasks', 'Plugins'])
+  // `bt-panel` is the shell's own fixed right-hand column; a page button must not borrow it.
+  assert.equal(row.buttons[0].props.className, 'bt-round bt-page')
   assert.ok(row.buttons.every(button => button.props['aria-pressed'] === false))
   // The glyph is the plugin's own, rendered through the slot the shell declares.
   assert.deepEqual(row.slots.map(slot => [slot.name, slot.filter.only, slot.props.size, slot.props.active]), [

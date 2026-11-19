@@ -1233,13 +1233,13 @@ export function PanelsRow({ panels, active, wide, renderSlot, select }) {
   if (!Array.isArray(panels) || panels.length === 0) return null
   return h('div', { className: wide ? 'bt-panels' : 'bt-panels bt-panels-rail', role: 'group', 'aria-label': t('Plugin pages') },
     panels.map(panel => h('button', {
-      key: panel.id, type: 'button', className: 'bt-round bt-panel',
+      key: panel.id, type: 'button', className: 'bt-round bt-page',
       'data-active': active === panel.id ? '' : undefined,
       'aria-pressed': active === panel.id,
       'aria-label': panel.label,
       title: panel.label,
       onClick: () => select(active === panel.id ? null : panel.id),
-    }, h('span', { className: 'bt-panel-glyph', 'aria-hidden': true },
+    }, h('span', { className: 'bt-page-glyph', 'aria-hidden': true },
       renderSlot?.('sidebar.panellist', { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })))))
 }
 
@@ -1300,10 +1300,10 @@ export const SIDEBAR_CSS = `
    the layout is showing. */
 .bt-panels{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px 6px 0;flex:none}
 .bt-panels-rail{flex-direction:column;flex-wrap:nowrap;justify-content:center;padding:0 0 2px}
-.bt-panel{color:var(--bt-ink-2)}
-.bt-panel:hover{color:var(--bt-ink)}
-.bt-panel[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
-.bt-panel-glyph{display:inline-flex;align-items:center;justify-content:center;line-height:0}
+.bt-page{color:var(--bt-ink-2)}
+.bt-page:hover{color:var(--bt-ink)}
+.bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
+.bt-page-glyph{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
 .bt-confirm-error{margin:0;font-size:12px;line-height:17px;color:var(--bt-danger);overflow-wrap:anywhere}
