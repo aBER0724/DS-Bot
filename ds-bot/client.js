@@ -1614,6 +1614,7 @@ var JA = {
   "Add another": "さらに追加",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud などの IMAP メール",
   "Other MCP server": "その他の MCP サーバー",
+  "Bearer …": "Bearer …",
   "Header name": "ヘッダー名",
   "Remove this header": "このヘッダーを削除",
   "+ Add a header": "+ ヘッダーを追加",
@@ -4083,6 +4084,7 @@ var KO = {
   "Add another": "추가 연결",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud 및 기타 IMAP 메일",
   "Other MCP server": "기타 MCP 서버",
+  "Bearer …": "Bearer …",
   "Header name": "헤더 이름",
   "Remove this header": "이 헤더 삭제",
   "+ Add a header": "+ 헤더 추가",
@@ -6555,6 +6557,7 @@ var ES = {
   "Add another": "Añadir otro",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud y otros correos IMAP",
   "Other MCP server": "Otro servidor MCP",
+  "Bearer …": "Bearer …",
   "Header name": "Nombre de la cabecera",
   "Remove this header": "Quitar esta cabecera",
   "+ Add a header": "+ Añadir una cabecera",
@@ -8985,6 +8988,7 @@ var FR = {
   "Add another": "En ajouter un autre",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud et autres messageries IMAP",
   "Other MCP server": "Autre serveur MCP",
+  "Bearer …": "Bearer …",
   "Header name": "Nom de l'en-tête",
   "Remove this header": "Retirer cet en-tête",
   "+ Add a header": "+ Ajouter un en-tête",
@@ -11454,6 +11458,7 @@ var DE = {
   "Add another": "Weiteres hinzufügen",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud und andere IMAP-Postfächer",
   "Other MCP server": "Anderer MCP-Server",
+  "Bearer …": "Bearer …",
   "Header name": "Header-Name",
   "Remove this header": "Diesen Header entfernen",
   "+ Add a header": "+ Header hinzufügen",
@@ -13926,6 +13931,7 @@ var ZH = {
   "Add another": "再添加一个",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud 等 IMAP 邮箱",
   "Other MCP server": "其他 MCP 服务器",
+  "Bearer …": "Bearer …",
   "Header name": "认证头名",
   "Remove this header": "删掉这条认证头",
   "+ Add a header": "+ 再加一条",
@@ -22582,7 +22588,7 @@ var scopeLabel = (scope, roster) => {
   return names.length === 0 ? t("No Bot") : names.join(t(" and "));
 };
 var when = (time) => Number.isFinite(time) ? new Date(time).toLocaleString(dateLocale(), { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
-function MaskedInput({ value, onChange, onEnter, label, autoFocus = false, disabled = false }) {
+function MaskedInput({ value, onChange, onEnter, label, placeholder, autoFocus = false, disabled = false }) {
   return (0, import_react19.createElement)("input", {
     className: "bt-secret-input",
     type: MASK_BY_CSS ? "text" : "password",
@@ -22599,7 +22605,7 @@ function MaskedInput({ value, onChange, onEnter, label, autoFocus = false, disab
     "data-bwignore": "",
     "data-form-type": "other",
     "aria-label": label,
-    placeholder: label ?? t("Paste or type the key"),
+    placeholder: placeholder ?? label ?? t("Paste or type the key"),
     onChange: (event) => onChange(event.target.value),
     onKeyDown: (event) => {
       if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
@@ -26723,7 +26729,7 @@ function HeaderRows({ rows: rows2, onChange }) {
       "div",
       { key: index, className: "bt-connector-header-row" },
       (0, import_react29.createElement)("input", { className: "bt-input bt-connector-header-name", "aria-label": t("Header name"), placeholder: "Authorization", value: row.name, spellCheck: false, autoComplete: "off", onChange: (e) => setRow(index, { name: e.target.value }) }),
-      (0, import_react29.createElement)("label", { className: "bt-q-field bt-secret-field bt-connector-header-value" }, (0, import_react29.createElement)(MaskedInput, { value: row.value, onChange: (value) => setRow(index, { value }), label: t("Value") })),
+      (0, import_react29.createElement)("label", { className: "bt-q-field bt-secret-field bt-connector-header-value" }, (0, import_react29.createElement)(MaskedInput, { value: row.value, onChange: (value) => setRow(index, { value }), label: t("Value"), placeholder: t("Bearer …") })),
       (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link", "aria-label": t("Remove this header"), onClick: () => onChange(rows2.filter((_, at) => at !== index)) }, t("Remove"))
     )),
     (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link bt-connector-add-header", onClick: () => onChange([...rows2, { name: "", value: "" }]) }, t("+ Add a header"))

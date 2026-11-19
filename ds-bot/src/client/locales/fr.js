@@ -1491,6 +1491,7 @@ export const FR = {
   "Add another": "En ajouter un autre",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud et autres messageries IMAP",
   "Other MCP server": "Autre serveur MCP",
+  'Bearer …': 'Bearer …',
   'Header name': "Nom de l'en-tête",
   'Remove this header': 'Retirer cet en-tête',
   '+ Add a header': '+ Ajouter un en-tête',

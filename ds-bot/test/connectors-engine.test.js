@@ -1151,6 +1151,10 @@ test('改认证头: an empty value keeps the secret, a header left out takes its
   assert.deepEqual(Object.keys(rt.state.connectors[id].custom.headers), ['Authorization'])
   assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_API_KEY'), undefined)
   assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_X_TRACE'), undefined)
+  // A header change mounts the server again, so a server that failed gets its retry.
+  const mountsBefore = rt.connectorsInternals.mounts.get(id)
+  await rt.connectorEndpoint('connector-set', { id, headers: { Authorization: 'Bearer three' } })
+  assert.notEqual(rt.connectorsInternals.mounts.get(id), mountsBefore, 'a new mount after the headers changed')
   // Removing the server takes the last one too.
   await rt.connectorEndpoint('connector-remove', { id })
   assert.equal(rt.secretValue('CONNECTOR_ACME_HEAD_AUTHORIZATION'), undefined)

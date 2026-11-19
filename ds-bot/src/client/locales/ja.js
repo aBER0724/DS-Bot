@@ -1491,6 +1491,7 @@ export const JA = {
   "Add another": "さらに追加",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud などの IMAP メール",
   "Other MCP server": "その他の MCP サーバー",
+  'Bearer …': 'Bearer …',
   'Header name': 'ヘッダー名',
   'Remove this header': 'このヘッダーを削除',
   '+ Add a header': '+ ヘッダーを追加',

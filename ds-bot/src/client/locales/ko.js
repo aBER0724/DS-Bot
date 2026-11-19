@@ -1523,6 +1523,7 @@ export const KO = {
   'Add another': '추가 연결',
   'QQ, 163, 126, Gmail, iCloud, and other IMAP mail': 'QQ, 163, 126, Gmail, iCloud 및 기타 IMAP 메일',
   'Other MCP server': '기타 MCP 서버',
+  'Bearer …': 'Bearer …',
   'Header name': '헤더 이름',
   'Remove this header': '이 헤더 삭제',
   '+ Add a header': '+ 헤더 추가',

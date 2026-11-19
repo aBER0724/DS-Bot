@@ -150,7 +150,7 @@ export function install(rt) {
       // Bot has to hear that instead of being sent to a sign-in that does not exist.
       unauthorizedMessage: id => entryFor(id)?.custom === undefined
         ? `The ${id} connector needs sign-in again. Call request_connector with id ${id} so the user can sign in, or ask them to sign in under Settings → Connectors.`
-        : `The ${id} connector answered 401: its token or authentication headers are wrong. Ask the user to fix them under Settings → Connectors (Change headers…), or to remove the server and add it again.`,
+        : `The ${id} connector answered 401: its token or authentication headers are wrong. Ask the user to fix them under Settings → Connectors (Change headers…), or to remove the server and add it again. An Authorization value usually starts with "Bearer " and a space.`,
       log: (...args) => rt.warn(...args),
     })
     await gateways.gw.listen()
@@ -825,9 +825,14 @@ export function install(rt) {
         patch.custom = { ...entry.custom, headers }
       }
       await saveState(entry.id, patch)
-      // The gateway resolves the headers of each request, so the new ones apply without a new
-      // mount: the tool names and the MCP session stay as they are.
-      if (headers !== undefined) await dropUnusedHeaders(entry.custom.headers ?? {}, headers)
+      if (headers !== undefined) {
+        await dropUnusedHeaders(entry.custom.headers ?? {}, headers)
+        // The gateway resolves the headers of every request, so a server that answers now needs no
+        // new mount. One that failed does: its fingerprint does not cover the headers, so the old
+        // mount would skip the retry and the row would stay on its error.
+        await unmount(entry.id)
+        await sync()
+      }
       rt.reapplyToolMasks?.()
       return connectorsView()
     },

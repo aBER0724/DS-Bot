@@ -1523,6 +1523,7 @@ export const DE = {
   'Add another': 'Weiteres hinzufügen',
   'QQ, 163, 126, Gmail, iCloud, and other IMAP mail': 'QQ, 163, 126, Gmail, iCloud und andere IMAP-Postfächer',
   'Other MCP server': 'Anderer MCP-Server',
+  'Bearer …': 'Bearer …',
   'Header name': 'Header-Name',
   'Remove this header': 'Diesen Header entfernen',
   '+ Add a header': '+ Header hinzufügen',

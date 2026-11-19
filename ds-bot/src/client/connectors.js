@@ -378,7 +378,7 @@ function HeaderRows({ rows, onChange }) {
   return h('div', { className: 'bt-connector-headers' },
     rows.map((row, index) => h('div', { key: index, className: 'bt-connector-header-row' },
       h('input', { className: 'bt-input bt-connector-header-name', 'aria-label': t('Header name'), placeholder: 'Authorization', value: row.name, spellCheck: false, autoComplete: 'off', onChange: e => setRow(index, { name: e.target.value }) }),
-      h('label', { className: 'bt-q-field bt-secret-field bt-connector-header-value' }, h(MaskedInput, { value: row.value, onChange: value => setRow(index, { value }), label: t('Value') })),
+      h('label', { className: 'bt-q-field bt-secret-field bt-connector-header-value' }, h(MaskedInput, { value: row.value, onChange: value => setRow(index, { value }), label: t('Value'), placeholder: t('Bearer …') })),
       h('button', { type: 'button', className: 'bt-connector-link', 'aria-label': t('Remove this header'), onClick: () => onChange(rows.filter((_, at) => at !== index)) }, t('Remove')))),
     h('button', { type: 'button', className: 'bt-connector-link bt-connector-add-header', onClick: () => onChange([...rows, { name: '', value: '' }]) }, t('+ Add a header')))
 }
