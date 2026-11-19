@@ -39,10 +39,10 @@ jobs:
         shell: bash
         working-directory: app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
       # Electron and electron-builder's build tools come from GitHub releases, which sometimes
@@ -54,7 +54,7 @@ jobs:
         run: echo "key=electron-downloads-${{ runner.os }}-${{ runner.arch }}-$(node -p "const d = require('./package.json').devDependencies; 'electron-' + d.electron + '-builder-' + d['electron-builder']")-${{ hashFiles('app/electron-builder.yml') }}" >> "$GITHUB_OUTPUT"
       - name: Restore Electron and the build tools
         id: downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/Library/Caches/electron
@@ -63,7 +63,7 @@ jobs:
       - run: npm ci --no-fund --no-audit
       - run: node scripts/seed-electron-checksums.mjs
       - name: Cache the locked runtime archives
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           # A cache from another lock version cannot supply a wrong runtime: the archives are
           # stored under their sha256 and every read is verified against it again.
@@ -74,7 +74,7 @@ jobs:
           CSC_FOR_PULL_REQUEST: 'true'
       - name: Save Electron and the build tools
         if: steps.downloads.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             ~/Library/Caches/electron
@@ -87,7 +87,7 @@ jobs:
       - name: Check the packaged app
         run: node scripts/check-packed.mjs
       - name: Keep the zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: DS-Bot-mac-arm64
           path: app/dist-pack/DS-Bot-*-mac-arm64.zip
@@ -95,7 +95,7 @@ jobs:
           if-no-files-found: error
           compression-level: 0
       - name: Keep the unpacked app for a direct grab
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: DS-Bot-app-arm64
           path: app/dist-pack/mac-arm64/
