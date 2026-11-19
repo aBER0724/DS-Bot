@@ -30593,7 +30593,7 @@ function TeamSidebar(props) {
     active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
     wide: wideContent,
     renderSlot: props.renderSlot,
-    usePanellistEntries: props.usePanellistGlyphs ?? (() => EMPTY_GLYPHS),
+    usePanellistEntries: props.usePanellistGlyphs ?? (() => /* @__PURE__ */ new Map()),
     select: (id) => actions.selectPanel(id)
   });
   const content = (0, import_react36.createElement)(
