@@ -30581,21 +30581,22 @@ function TeamSidebar(props) {
     main ? (0, import_react36.createElement)(BotRow, { ...rowProps, bot: main, marked: markedUnread[main.id] === true }) : roster.ready ? null : bootFailed ? (0, import_react36.createElement)(BootFailed, { actions }) : (0, import_react36.createElement)("div", { className: "bt-hint" }, t("Setting up your Main Bot…")),
     (0, import_react36.createElement)("span", { className: "bt-rail-sep", "aria-hidden": true })
   );
-  const foot = wideContent ? (0, import_react36.createElement)("div", { className: "bt-leftcol-foot" }, (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react36.createElement)(PluginsButton, { actions })) : (0, import_react36.createElement)(
-    "div",
-    { className: "bt-leftcol-foot bt-leftcol-foot-rail" },
-    (0, import_react36.createElement)("button", { type: "button", className: "bt-round", "aria-label": t("New…"), title: t("New…"), onClick: () => actions.openNewChat("new") }, (0, import_react36.createElement)(PlusIcon)),
-    (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }),
-    (0, import_react36.createElement)(PluginsButton, { actions })
-  );
-  const panelsRow = (0, import_react36.createElement)(PanelsRow, {
+  const pageButtons = (0, import_react36.createElement)(PanelsButtons, {
     panels: props.usePanels ? props.usePanels((value) => value) : [],
     active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
     wide: wideContent,
     renderSlot: props.renderSlot,
-    usePanellistEntries: props.usePanellistGlyphs ?? (() => /* @__PURE__ */ new Map()),
+    usePanellistGlyphs: props.usePanellistGlyphs ?? (() => /* @__PURE__ */ new Map()),
     select: (id) => actions.selectPanel(id)
   });
+  const foot = wideContent ? (0, import_react36.createElement)("div", { className: "bt-leftcol-foot" }, pageButtons, (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react36.createElement)(PluginsButton, { actions })) : (0, import_react36.createElement)(
+    "div",
+    { className: "bt-leftcol-foot bt-leftcol-foot-rail" },
+    (0, import_react36.createElement)("button", { type: "button", className: "bt-round", "aria-label": t("New…"), title: t("New…"), onClick: () => actions.openNewChat("new") }, (0, import_react36.createElement)(PlusIcon)),
+    pageButtons,
+    (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }),
+    (0, import_react36.createElement)(PluginsButton, { actions })
+  );
   const content = (0, import_react36.createElement)(
     "div",
     { className: wideContent ? "bt-side" : "bt-side bt-rail", onKeyDown: typeToSearch },
@@ -30637,7 +30638,6 @@ function TeamSidebar(props) {
         onDropSec
       }))
     ),
-    panelsRow,
     foot
   );
   return (0, import_react36.createElement)(
@@ -31041,26 +31041,22 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
   const Glyph = entries2.get(panel);
   return Glyph ? (0, import_react36.createElement)(Glyph, { size, active }) : (0, import_react36.createElement)("span", { style: { width: size, height: size }, "aria-hidden": true });
 }
-function PanelsRow({ panels, active, wide, renderSlot, usePanellistEntries, select }) {
+function PanelsButtons({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
   if (!Array.isArray(panels) || panels.length === 0) return null;
-  return (0, import_react36.createElement)(
-    "div",
-    { className: wide ? "bt-panels" : "bt-panels bt-panels-rail", role: "group", "aria-label": t("Plugin pages") },
-    panels.map((panel) => (0, import_react36.createElement)("button", {
-      key: panel.id,
-      type: "button",
-      className: "bt-round bt-page",
-      "data-active": active === panel.id ? "" : void 0,
-      "aria-pressed": active === panel.id,
-      "aria-label": panel.label,
-      title: panel.label,
-      onClick: () => select(active === panel.id ? null : panel.id)
-    }, (0, import_react36.createElement)(
-      "span",
-      { className: "bt-page-glyph", "aria-hidden": true },
-      renderSlot === void 0 ? (0, import_react36.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 16 : 18, active: active === panel.id, useEntries: usePanellistEntries }) : renderSlot("sidebar.panellist", { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })
-    )))
-  );
+  return panels.map((panel) => (0, import_react36.createElement)("button", {
+    key: panel.id,
+    type: "button",
+    className: "bt-account bt-page",
+    "data-active": active === panel.id ? "" : void 0,
+    "aria-pressed": active === panel.id,
+    "aria-label": panel.label,
+    title: panel.label,
+    onClick: () => select(active === panel.id ? null : panel.id)
+  }, (0, import_react36.createElement)(
+    "span",
+    { className: "bt-you", "aria-hidden": true },
+    renderSlot === void 0 ? (0, import_react36.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs }) : renderSlot("sidebar.panellist", { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id })
+  )));
 }
 function PluginsButton({ actions }) {
   if (!actions.hasPlugins?.()) return null;
@@ -31108,15 +31104,9 @@ function BrandName() {
   return (0, import_react36.createElement)("span", { style: { fontWeight: 600, fontSize: 14 } }, "DS Bot");
 }
 var SIDEBAR_CSS = `
-/* The global panels of other plugins: one glyph per page, above the foot. The row keeps the
-   rail's single column and the wide column's left alignment, and a pressed row shows the page
-   the layout is showing. */
-.bt-panels{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px 6px 0;flex:none}
-.bt-panels-rail{flex-direction:column;flex-wrap:nowrap;justify-content:center;padding:0 0 2px}
-.bt-page{color:var(--bt-ink-2)}
-.bt-page:hover{color:var(--bt-ink)}
+/* The global panels of other plugins share the foot's own row (and the rail's column), styled
+   exactly like 「设置」 and 「插件」; only the pressed state marks the open page. */
 .bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
-.bt-page-glyph{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
 .bt-confirm-error{margin:0;font-size:12px;line-height:17px;color:var(--bt-danger);overflow-wrap:anywhere}

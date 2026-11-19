@@ -807,20 +807,21 @@ export function TeamSidebar(props) {
         h('span', { className: 'bt-rail-sep', 'aria-hidden': true }))
   // The foot stands in for the shell's hidden footer: the account avatar, and on
   // the rail the new-chat button above it.
-  const foot = wideContent
-    ? h('div', { className: 'bt-leftcol-foot' }, h(AccountLauncher, { seat: false, actions }), h(PluginsButton, { actions }))
-    : h('div', { className: 'bt-leftcol-foot bt-leftcol-foot-rail' },
-        h('button', { type: 'button', className: 'bt-round', 'aria-label': t('New…'), title: t('New…'), onClick: () => actions.openNewChat('new') }, h(PlusIcon)),
-        h(AccountLauncher, { seat: false, actions }),
-        h(PluginsButton, { actions }))
-  const panelsRow = h(PanelsRow, {
+  const pageButtons = h(PanelsButtons, {
     panels: props.usePanels ? props.usePanels(value => value) : [],
     active: props.useActivePanel ? props.useActivePanel(value => value) : null,
     wide: wideContent,
     renderSlot: props.renderSlot,
-    usePanellistEntries: props.usePanellistGlyphs ?? (() => new Map()),
+    usePanellistGlyphs: props.usePanellistGlyphs ?? (() => new Map()),
     select: id => actions.selectPanel(id),
   })
+  const foot = wideContent
+    ? h('div', { className: 'bt-leftcol-foot' }, pageButtons, h(AccountLauncher, { seat: false, actions }), h(PluginsButton, { actions }))
+    : h('div', { className: 'bt-leftcol-foot bt-leftcol-foot-rail' },
+        h('button', { type: 'button', className: 'bt-round', 'aria-label': t('New…'), title: t('New…'), onClick: () => actions.openNewChat('new') }, h(PlusIcon)),
+        pageButtons,
+        h(AccountLauncher, { seat: false, actions }),
+        h(PluginsButton, { actions }))
   const content = h('div', { className: wideContent ? 'bt-side' : 'bt-side bt-rail', onKeyDown: typeToSearch },
     top,
     wideContent && roster.readOnly ? h('div', { className: 'bt-hint bt-read-only', role: 'status' }, hostText(roster.readOnly)) : null,
@@ -851,7 +852,6 @@ export function TeamSidebar(props) {
         onDragOverSec,
         onDropSec,
       }))),
-    panelsRow,
     foot)
   return h(Fragment, null,
     h(TitleToggle, { hidden: mode === 'hidden', onToggle }),
@@ -1238,20 +1238,19 @@ function PanelsGlyph({ panel, size, active, useEntries }) {
   return Glyph ? h(Glyph, { size, active }) : h('span', { style: { width: size, height: size }, 'aria-hidden': true })
 }
 
-export function PanelsRow({ panels, active, wide, renderSlot, usePanellistEntries, select }) {
+export function PanelsButtons({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
   if (!Array.isArray(panels) || panels.length === 0) return null
-  return h('div', { className: wide ? 'bt-panels' : 'bt-panels bt-panels-rail', role: 'group', 'aria-label': t('Plugin pages') },
-    panels.map(panel => h('button', {
-      key: panel.id, type: 'button', className: 'bt-round bt-page',
-      'data-active': active === panel.id ? '' : undefined,
-      'aria-pressed': active === panel.id,
-      'aria-label': panel.label,
-      title: panel.label,
-      onClick: () => select(active === panel.id ? null : panel.id),
-    }, h('span', { className: 'bt-page-glyph', 'aria-hidden': true },
-      renderSlot === undefined
-        ? h(PanelsGlyph, { panel: panel.id, size: wide ? 16 : 18, active: active === panel.id, useEntries: usePanellistEntries })
-        : renderSlot('sidebar.panellist', { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })))))
+  return panels.map(panel => h('button', {
+    key: panel.id, type: 'button', className: 'bt-account bt-page',
+    'data-active': active === panel.id ? '' : undefined,
+    'aria-pressed': active === panel.id,
+    'aria-label': panel.label,
+    title: panel.label,
+    onClick: () => select(active === panel.id ? null : panel.id),
+  }, h('span', { className: 'bt-you', 'aria-hidden': true },
+    renderSlot === undefined
+      ? h(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs })
+      : renderSlot('sidebar.panellist', { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id }))))
 }
 
 export function PluginsButton({ actions }) {
@@ -1306,15 +1305,9 @@ export function BrandName() {
 // FooterAccount only shows when the seat went to no one. The shell's footer classes
 // are CSS-module names, so they match on their stems.
 export const SIDEBAR_CSS = `
-/* The global panels of other plugins: one glyph per page, above the foot. The row keeps the
-   rail's single column and the wide column's left alignment, and a pressed row shows the page
-   the layout is showing. */
-.bt-panels{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px 6px 0;flex:none}
-.bt-panels-rail{flex-direction:column;flex-wrap:nowrap;justify-content:center;padding:0 0 2px}
-.bt-page{color:var(--bt-ink-2)}
-.bt-page:hover{color:var(--bt-ink)}
+/* The global panels of other plugins share the foot's own row (and the rail's column), styled
+   exactly like 「设置」 and 「插件」; only the pressed state marks the open page. */
 .bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
-.bt-page-glyph{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
 .bt-confirm-error{margin:0;font-size:12px;line-height:17px;color:var(--bt-danger);overflow-wrap:anywhere}
