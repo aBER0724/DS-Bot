@@ -1,0 +1,103 @@
+# The fork's own build: package the desktop app from any branch and keep the zip as an
+# artifact, so a fresh DS Bot.app is one download away. Upstream CI does the same build on
+# every PR; this workflow exists for forks, where actions from pushes otherwise never run.
+#
+#   - push to any branch except main/dev/release/*: build only when the app's own files moved
+#   - workflow_dispatch: build on demand, any branch, packaging even when nothing moved
+#
+# The build is the upstream one, abridged: npm ci → runtime payload → npm run dist (which runs
+# electron-builder with the repo's own electron-builder.yml; macOS seals the bundle ad-hoc with
+# identity '-', so no certificate or secret is needed and forks can run this unchanged).
+
+name: App build
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!main'
+      - '!dev'
+      - '!release/**'
+    paths:
+      - 'app/**'
+      - 'ds-bot/**'
+      - '.github/workflows/app-build.yml'
+  workflow_dispatch:
+
+# One build per branch at a time; a new push cancels the stale one.
+concurrency:
+  group: app-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: DS Bot.app (macOS arm64)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Electron and electron-builder's build tools come from GitHub releases, which sometimes
+      # answer 504. The key holds the versions and the builder config, which decide the files
+      # downloaded; the cache root is seeded with Electron's checksums so nothing is fetched
+      # per build.
+      - name: Name the download cache
+        id: downloads-key
+        run: echo "key=electron-downloads-${{ runner.os }}-${{ runner.arch }}-$(node -p "const d = require('./package.json').devDependencies; 'electron-' + d.electron + '-builder-' + d['electron-builder']")-${{ hashFiles('app/electron-builder.yml') }}" >> "$GITHUB_OUTPUT"
+      - name: Restore Electron and the build tools
+        id: downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+          key: ${{ steps.downloads-key.outputs.key }}
+      - run: npm ci --no-fund --no-audit
+      - run: node scripts/seed-electron-checksums.mjs
+      - name: Cache the locked runtime archives
+        uses: actions/cache@v4
+        with:
+          # A cache from another lock version cannot supply a wrong runtime: the archives are
+          # stored under their sha256 and every read is verified against it again.
+          path: build/runtime-cache
+          key: runtime-cache-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/primary-runtime.lock.json') }}
+      - run: npm run dist
+        env:
+          CSC_FOR_PULL_REQUEST: 'true'
+      - name: Save Electron and the build tools
+        if: steps.downloads.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+          key: ${{ steps.downloads-key.outputs.key }}
+      - name: Check the zip
+        run: |
+          zip="dist-pack/DS-Bot-$(node -p "require('./package.json').version")-mac-arm64.zip"
+          test -f "$zip"
+      - name: Check the packaged app
+        run: node scripts/check-packed.mjs
+      - name: Keep the zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: DS-Bot-mac-arm64
+          path: dist-pack/DS-Bot-*-mac-arm64.zip
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+      - name: Keep the unpacked app for a direct grab
+        uses: actions/upload-artifact@v4
+        with:
+          name: DS-Bot-app-arm64
+          path: dist-pack/mac-arm64/
+          retention-days: 7
+          if-no-files-found: error
