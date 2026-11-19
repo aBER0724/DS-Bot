@@ -45,8 +45,12 @@ function MemoryNotice({ shown }) {
     h('span', { className: 'bt-pill-mem-in', ref: inner }, h('span', { className: 'bt-pill-mem-ico' }, h(MemoryIcon)), label))
 }
 
-export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, selectView, actions }) {
+export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, useActivePanel, selectView, actions }) {
   const roster = useRoster(value => value)
+  // A page another plugin registered (the schedule page, the plugin manager, …) draws its own
+  // header in the same seat. DS Bot's pill there would sit on top of it; the row of page icons in
+  // the sidebar is the way back.
+  const pageOpen = useActivePanel?.(value => value !== null) === true
   const selectedView = useStore?.(state => state.view)
   const away = useConversationViews?.(views => views.some(view => view.id === selectedView && view.id !== 'chat')) === true
     && typeof selectView === 'function'
@@ -118,6 +122,7 @@ export function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus
     else delete document.body.dataset.btGoal
     return () => { delete document.body.dataset.btGoal }
   }, [showGoal])
+  if (pageOpen) return null
   const pill = h('button', {
     type: 'button', className: 'bt-pill', 'aria-expanded': away ? undefined : detailsOpen, 'data-memory': memoryNotice ? 'updated' : undefined,
     'aria-label': away ? t('Back to chat') : memoryNotice ? t('Memory updated. Open {name}\'s memory', { name: roster.byId[changed]?.name ?? name }) : t('View conversation details'),

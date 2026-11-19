@@ -38167,8 +38167,9 @@ function MemoryNotice({ shown }) {
     (0, import_react54.createElement)("span", { className: "bt-pill-mem-in", ref: inner }, (0, import_react54.createElement)("span", { className: "bt-pill-mem-ico" }, (0, import_react54.createElement)(MemoryIcon)), label)
   );
 }
-function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, selectView, actions }) {
+function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useStore, useConversationViews, useActivePanel, selectView, actions }) {
   const roster = useRoster((value) => value);
+  const pageOpen = useActivePanel?.((value) => value !== null) === true;
   const selectedView = useStore?.((state) => state.view);
   const away = useConversationViews?.((views) => views.some((view2) => view2.id === selectedView && view2.id !== "chat")) === true && typeof selectView === "function";
   const title = useSessions((list) => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? "");
@@ -38231,6 +38232,7 @@ function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSe
       delete document.body.dataset.btGoal;
     };
   }, [showGoal]);
+  if (pageOpen) return null;
   const pill = (0, import_react54.createElement)(
     "button",
     {
