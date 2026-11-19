@@ -17,7 +17,7 @@ const { JSDOM } = createRequire(join(process.env.DSH_HARNESS ?? join(PLUGIN, '..
 // fixtures retain refs across commits and run their layout effects after each render.
 const { outputFiles } = await build({
   stdin: {
-    contents: "export { SHELL_CSS } from './src/client/styles.js'\nexport { SIDEBAR_CSS, TeamSidebar, PluginsButton } from './src/client/sidebar.js'\nexport { dshCollapsed, installFrameWatch } from './src/client/frame-watch.js'",
+    contents: "export { SHELL_CSS } from './src/client/styles.js'\nexport { SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsRow } from './src/client/sidebar.js'\nexport { dshCollapsed, installFrameWatch } from './src/client/frame-watch.js'",
     resolveDir: PLUGIN,
   },
   bundle: true, format: 'cjs', platform: 'browser', write: false, logLevel: 'silent',
@@ -60,7 +60,7 @@ const sandbox = {
   window: viewport,
 }
 runInNewContext(outputFiles[0].text, sandbox)
-const { SHELL_CSS, SIDEBAR_CSS, TeamSidebar, PluginsButton, dshCollapsed, installFrameWatch } = module.exports
+const { SHELL_CSS, SIDEBAR_CSS, TeamSidebar, PluginsButton, PanelsRow, dshCollapsed, installFrameWatch } = module.exports
 
 function navigationSidebar(wide, { leftDrawer = false } = {}) {
   const calls = []
@@ -856,4 +856,57 @@ test('TeamSidebar leaves an already-collapsed DSH Desktop sidebar alone', async 
       document.documentElement.removeAttribute('data-bt-collapsing')
     }
   })
+})
+
+// --- the global panels of other plugins -------------------------------------
+
+const panelsRow = ({ panels, active, wide = true }) => {
+  const calls = []
+  const slots = []
+  const tree = PanelsRow({
+    panels, active, wide,
+    renderSlot: (name, props, filter) => { slots.push({ name, props, filter }); return null },
+    select: id => { calls.push(id) },
+  })
+  const buttons = []
+  const walk = (node) => {
+    if (Array.isArray(node)) { node.forEach(walk); return }
+    if (!node || typeof node !== 'object') return
+    if (node.type === 'button') buttons.push(node)
+    walk(node.props?.children)
+  }
+  walk(tree)
+  return { tree, buttons, calls, slots }
+}
+
+const twoPanels = [{ id: 'schedule', order: 1, label: 'Automation tasks' }, { id: 'plugins', order: 2, label: 'Plugins' }]
+
+test('the panel row draws one glyph per registered page and opens it through the layout', () => {
+  const row = panelsRow({ panels: twoPanels, active: null })
+  assert.equal(row.tree.props['aria-label'], 'Plugin pages')
+  assert.deepEqual(row.buttons.map(button => button.props['aria-label']), ['Automation tasks', 'Plugins'])
+  assert.ok(row.buttons.every(button => button.props['aria-pressed'] === false))
+  // The glyph is the plugin's own, rendered through the slot the shell declares.
+  assert.deepEqual(row.slots.map(slot => [slot.name, slot.filter.only, slot.props.size, slot.props.active]), [
+    ['sidebar.panellist', 'schedule', 16, false],
+    ['sidebar.panellist', 'plugins', 16, false],
+  ])
+  row.buttons[0].props.onClick()
+  assert.deepEqual(row.calls, ['schedule'])
+})
+
+test('the open page is marked, and picking it again returns to the chat', () => {
+  const row = panelsRow({ panels: twoPanels, active: 'plugins' })
+  assert.deepEqual(row.buttons.map(button => button.props['data-active'] !== undefined), [false, true])
+  assert.equal(row.slots[1].props.active, true)
+  row.buttons[1].props.onClick()
+  assert.deepEqual(row.calls, [null], 'null is the conversation seat')
+})
+
+test('no registered page draws no row, and the rail keeps the same buttons', () => {
+  assert.equal(panelsRow({ panels: [], active: null }).tree, null)
+  assert.equal(panelsRow({ panels: undefined, active: null }).tree, null)
+  const rail = panelsRow({ panels: twoPanels, active: null, wide: false })
+  assert.match(rail.tree.props.className, /bt-panels-rail/u)
+  assert.equal(rail.slots[0].props.size, 18)
 })

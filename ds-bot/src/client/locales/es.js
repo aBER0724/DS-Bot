@@ -1524,6 +1524,7 @@ export const ES = {
   'QQ, 163, 126, Gmail, iCloud, and other IMAP mail': 'QQ, 163, 126, Gmail, iCloud y otros correos IMAP',
   'Other MCP server': 'Otro servidor MCP',
   'Bearer …': 'Bearer …',
+  'Plugin pages': 'Páginas de los plugins',
   'Header name': 'Nombre de la cabecera',
   'Remove this header': 'Quitar esta cabecera',
   '+ Add a header': '+ Añadir una cabecera',

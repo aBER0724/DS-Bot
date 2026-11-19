@@ -1535,6 +1535,7 @@ const ZH = {
   'QQ, 163, 126, Gmail, iCloud, and other IMAP mail': 'QQ、163、126、Gmail、iCloud 等 IMAP 邮箱',
   'Other MCP server': '其他 MCP 服务器',
   'Bearer …': 'Bearer …',
+  'Plugin pages': '插件页面',
   'Header name': '认证头名',
   'Remove this header': '删掉这条认证头',
   '+ Add a header': '+ 再加一条',

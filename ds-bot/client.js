@@ -1615,6 +1615,7 @@ var JA = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud などの IMAP メール",
   "Other MCP server": "その他の MCP サーバー",
   "Bearer …": "Bearer …",
+  "Plugin pages": "プラグインのページ",
   "Header name": "ヘッダー名",
   "Remove this header": "このヘッダーを削除",
   "+ Add a header": "+ ヘッダーを追加",
@@ -4085,6 +4086,7 @@ var KO = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud 및 기타 IMAP 메일",
   "Other MCP server": "기타 MCP 서버",
   "Bearer …": "Bearer …",
+  "Plugin pages": "플러그인 페이지",
   "Header name": "헤더 이름",
   "Remove this header": "이 헤더 삭제",
   "+ Add a header": "+ 헤더 추가",
@@ -6558,6 +6560,7 @@ var ES = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud y otros correos IMAP",
   "Other MCP server": "Otro servidor MCP",
   "Bearer …": "Bearer …",
+  "Plugin pages": "Páginas de los plugins",
   "Header name": "Nombre de la cabecera",
   "Remove this header": "Quitar esta cabecera",
   "+ Add a header": "+ Añadir una cabecera",
@@ -8989,6 +8992,7 @@ var FR = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud et autres messageries IMAP",
   "Other MCP server": "Autre serveur MCP",
   "Bearer …": "Bearer …",
+  "Plugin pages": "Pages des greffons",
   "Header name": "Nom de l'en-tête",
   "Remove this header": "Retirer cet en-tête",
   "+ Add a header": "+ Ajouter un en-tête",
@@ -11459,6 +11463,7 @@ var DE = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud und andere IMAP-Postfächer",
   "Other MCP server": "Anderer MCP-Server",
   "Bearer …": "Bearer …",
+  "Plugin pages": "Plugin-Seiten",
   "Header name": "Header-Name",
   "Remove this header": "Diesen Header entfernen",
   "+ Add a header": "+ Header hinzufügen",
@@ -13932,6 +13937,7 @@ var ZH = {
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud 等 IMAP 邮箱",
   "Other MCP server": "其他 MCP 服务器",
   "Bearer …": "Bearer …",
+  "Plugin pages": "插件页面",
   "Header name": "认证头名",
   "Remove this header": "删掉这条认证头",
   "+ Add a header": "+ 再加一条",
@@ -30582,6 +30588,13 @@ function TeamSidebar(props) {
     (0, import_react36.createElement)(AccountLauncher, { seat: false, actions }),
     (0, import_react36.createElement)(PluginsButton, { actions })
   );
+  const panelsRow = (0, import_react36.createElement)(PanelsRow, {
+    panels: props.usePanels ? props.usePanels((value) => value) : [],
+    active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
+    wide: wideContent,
+    renderSlot: props.renderSlot,
+    select: (id) => actions.selectPanel(id)
+  });
   const content = (0, import_react36.createElement)(
     "div",
     { className: wideContent ? "bt-side" : "bt-side bt-rail", onKeyDown: typeToSearch },
@@ -30623,6 +30636,7 @@ function TeamSidebar(props) {
         onDropSec
       }))
     ),
+    panelsRow,
     foot
   );
   return (0, import_react36.createElement)(
@@ -30860,7 +30874,6 @@ function AccountLauncher({ seat = true, settingsOpen, actions }) {
       [t("Usage"), GaugeIcon, () => actions.openSettings("usage")],
       openModels ? [t("Models and API keys"), SlidersIcon, () => openModels()] : null,
       [t("Connectors"), ConnectorIcon, () => actions.openConnectors()],
-      [t("Automation tasks"), ClockIcon, () => actions.selectPanel("schedules")],
       [t("Settings"), GearIcon, () => actions.openSettings("general")]
     ].filter(Boolean),
     typeof actions.setSurface === "function" ? [[t("Classic Agent mode"), SwitchIcon, () => actions.setSurface("agent")]] : null
@@ -31022,6 +31035,27 @@ function useLandOnMainBot(roster, useSessions, actions) {
     return () => clearTimeout(timer);
   }, [mainView, roster]);
 }
+function PanelsRow({ panels, active, wide, renderSlot, select }) {
+  if (!Array.isArray(panels) || panels.length === 0) return null;
+  return (0, import_react36.createElement)(
+    "div",
+    { className: wide ? "bt-panels" : "bt-panels bt-panels-rail", role: "group", "aria-label": t("Plugin pages") },
+    panels.map((panel) => (0, import_react36.createElement)("button", {
+      key: panel.id,
+      type: "button",
+      className: "bt-round bt-panel",
+      "data-active": active === panel.id ? "" : void 0,
+      "aria-pressed": active === panel.id,
+      "aria-label": panel.label,
+      title: panel.label,
+      onClick: () => select(active === panel.id ? null : panel.id)
+    }, (0, import_react36.createElement)(
+      "span",
+      { className: "bt-panel-glyph", "aria-hidden": true },
+      renderSlot?.("sidebar.panellist", { size: wide ? 16 : 18, active: active === panel.id }, { only: panel.id })
+    )))
+  );
+}
 function PluginsButton({ actions }) {
   if (!actions.hasPlugins?.()) return null;
   return (0, import_react36.createElement)(
@@ -31068,6 +31102,15 @@ function BrandName() {
   return (0, import_react36.createElement)("span", { style: { fontWeight: 600, fontSize: 14 } }, "DS Bot");
 }
 var SIDEBAR_CSS = `
+/* The global panels of other plugins: one glyph per page, above the foot. The row keeps the
+   rail's single column and the wide column's left alignment, and a pressed row shows the page
+   the layout is showing. */
+.bt-panels{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:2px 6px 0;flex:none}
+.bt-panels-rail{flex-direction:column;flex-wrap:nowrap;justify-content:center;padding:0 0 2px}
+.bt-panel{color:var(--bt-ink-2)}
+.bt-panel:hover{color:var(--bt-ink)}
+.bt-panel[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
+.bt-panel-glyph{display:inline-flex;align-items:center;justify-content:center;line-height:0}
 .bt-confirm{width:260px;max-width:72vw;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
 .bt-confirm-error{margin:0;font-size:12px;line-height:17px;color:var(--bt-danger);overflow-wrap:anywhere}
@@ -46396,7 +46439,31 @@ function apply(ctx) {
       else if (kind === "letgo") void actions.computerAllowForeground(botId);
     });
   }
-  const face = () => ({ actions, hooks: { roster, ui: ui2, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld } });
+  const panelLabel = (label) => (typeof label === "function" ? label() : label) ?? "";
+  const panelRows = () => {
+    const entries2 = ctx.slots.entriesOfSlot?.("sidebar.panellist") ?? ctx.slots.entries?.("sidebar.panellist") ?? [];
+    return entries2.map(({ options }) => ({ id: String(options?.id ?? ""), order: Number(options?.order ?? 0), label: panelLabel(options?.label) })).filter((row) => row.id !== "").sort((a, b) => a.order - b.order);
+  };
+  const panels = createSource(panelRows());
+  const syncPanels = () => {
+    const next = panelRows();
+    const previous = panels.getSnapshot();
+    panels.set(previous.length === next.length && previous.every((row, index) => row.id === next[index].id && row.order === next[index].order && row.label === next[index].label) ? previous : next);
+  };
+  ctx.effect(() => {
+    const offs = [ctx.slots.subscribe("sidebar.panellist", syncPanels)];
+    const locale = ctx.locale;
+    if (typeof locale?.subscribe === "function") offs.push(locale.subscribe(syncPanels));
+    syncPanels();
+    return () => {
+      for (const off of offs) off?.();
+    };
+  }, "ds-bot: panel entries");
+  const activePanel = createSource(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null);
+  ctx.effect(() => ctx.layout.panelInfo.subscribe(() => {
+    activePanel.set(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null);
+  }), "ds-bot: active panel");
+  const face = () => ({ actions, hooks: { roster, ui: ui2, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } });
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === "function";
   ctx.effect(() => installCommandActions(ctx, { roster, actions }), "ds-bot: bot command actions");
   ctx.effect(() => {

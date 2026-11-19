@@ -957,7 +957,35 @@ export function apply(ctx) {
       else if (kind === 'letgo') void actions.computerAllowForeground(botId)
     })
   }
-  const face = () => ({ actions, hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld } })
+  // The shell's global panels: other plugins register a row in `sidebar.panellist` (the schedule
+  // page, the plugin manager, …) and the layout's `main` seat shows the page. DS Bot's own column
+  // holds their icons, so a page that DS Bot does not draw itself still has an entry.
+  const panelLabel = (label) => (typeof label === 'function' ? label() : label) ?? ''
+  const panelRows = () => {
+    const entries = ctx.slots.entriesOfSlot?.('sidebar.panellist') ?? ctx.slots.entries?.('sidebar.panellist') ?? []
+    return entries
+      .map(({ options }) => ({ id: String(options?.id ?? ''), order: Number(options?.order ?? 0), label: panelLabel(options?.label) }))
+      .filter(row => row.id !== '')
+      .sort((a, b) => a.order - b.order)
+  }
+  const panels = createSource(panelRows())
+  const syncPanels = () => {
+    const next = panelRows()
+    const previous = panels.getSnapshot()
+    panels.set(previous.length === next.length && previous.every((row, index) => row.id === next[index].id && row.order === next[index].order && row.label === next[index].label) ? previous : next)
+  }
+  ctx.effect(() => {
+    const offs = [ctx.slots.subscribe('sidebar.panellist', syncPanels)]
+    const locale = ctx.locale
+    if (typeof locale?.subscribe === 'function') offs.push(locale.subscribe(syncPanels))
+    syncPanels()
+    return () => { for (const off of offs) off?.() }
+  }, 'ds-bot: panel entries')
+  // Which page the layout shows: null is the conversation. The layout owns it, so DS Bot reads it
+  // rather than keeping a copy that a plugin could desynchronise.
+  const activePanel = createSource(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null)
+  ctx.effect(() => ctx.layout.panelInfo.subscribe(() => { activePanel.set(ctx.layout.panelInfo.getSnapshot().activePanelId ?? null) }), 'ds-bot: active panel')
+  const face = () => ({ actions, hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame, sidebarPref, settingsShellHeld, panels, activePanel } })
   // Since DSH 0.2.1-alpha.3 user text is drawn by rules and a content factory, not the
   // primitives' text projection; the user's bubble draws with either (user-message.js).
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === 'function'
