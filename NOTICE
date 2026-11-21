@@ -226,6 +226,15 @@ Miller), @lukeburns/clatterjs (MIT, Copyright (c) 2025 Joni Lepistö) and, in
 the Server only, ws (MIT, Copyright (c) 2011 Einar Otto Stangvik, (c) 2013
 Arnout Kazemier and contributors, (c) 2016 Luigi Pinca and contributors).
 
+Two third-party tools run beside the team without being copied in.
+billion-context (https://github.com/ranxianglei/billion-context, MIT License,
+Copyright (c) 2026 ranxianglei) is installed from npm as a dependency and
+compresses the model traffic of a long Session. rtk
+(https://github.com/rtk-ai/rtk, Apache License, Version 2.0, Copyright 2026 RTK AI
+Labs) is a separate binary that DS Bot downloads when `rtk` is not already on
+PATH: the Apache-2.0 edition only (`rtk-oss-*`), never the download that adds
+the BUSL-1.1 engine. Both keep their own licenses.
+
 ==============================================================================
 Projects that gave us ideas (no code copied)
 ==============================================================================

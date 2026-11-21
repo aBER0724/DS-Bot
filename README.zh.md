@@ -125,6 +125,10 @@ bot 可以直接创建、检查和修改 Word（`.docx`）、PowerPoint（`.pptx
 
 ![用量页](docs/images/usage.zh.png)
 
+### 省 token
+
+bot 跑命令的输出会先经过 [rtk](https://github.com/rtk-ai/rtk)：同一条命令、同样的退出码，但读的是紧凑版本；长会话则交给 [billion-context](https://github.com/ranxianglei/billion-context) 压缩模型流量，一个对话可以连着跑很多天。两个都默认开着，不用配置：`PATH` 上没有 `rtk` 时，ds bot 会把 rtk 的 Apache-2.0 版本装进团队的数据目录；装不上就原样执行命令，不影响干活。`DS_BOT_RTK=0` 和 `DS_BOT_BILLION_CONTEXT=0` 分别关掉它们。billion-context 在的时候，bot 的对话满了会换到新的一段，而不是就地压缩这一段；`read_own_chat` 照样能搜到每一段。
+
 ## 数据
 
 所有数据都在你自己的电脑上：桌面应用存在首次启动选定的位置（默认 `~/.ds-bot`），插件版存在 dsh 主目录（默认 `~/.dsh`）的 `bot/` 和 `sessions/` 里。卸载应用或插件不会删除这些数据。
