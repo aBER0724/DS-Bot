@@ -265,6 +265,16 @@ export function install(rt) {
       const readOnly = rt.readOnly()
       if (readOnly !== undefined && !READS.has(endpoint)) return fail(readOnly, 'bot/read-only')
       switch (endpoint) {
+        // Web Push keeps its own file and its own routes; this channel is how the page
+        // reaches it (src/host/push.js).
+        case 'push-state':
+        case 'push-subscribe':
+        case 'push-unsubscribe':
+        case 'push-prefs':
+        case 'push-presence': {
+          const answer = await rt.pushEndpoint?.(endpoint, body)
+          return answer ?? fail('Web Push is not running.', 'bot/unknown')
+        }
         case 'state': {
           if (typeof body.locale === 'string' && /^[a-z]{2,3}(-[\w-]+)?$/i.test(body.locale)) uiLocale = body.locale
           if (readOnly === undefined) await rt.bootstrap()

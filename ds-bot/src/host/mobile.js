@@ -179,6 +179,8 @@ export function install(rt) {
     kept.push(notice)
     if (kept.length > NOTICES_KEPT) kept.splice(0, kept.length - NOTICES_KEPT)
     rt.publishFeed?.('notice', notice)
+    // A phone with the page closed has nothing listening: push.js wakes it.
+    rt.pushNotice?.(notice)
     return notice
   }
 

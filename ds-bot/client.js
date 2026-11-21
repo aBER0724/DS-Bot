@@ -28377,20 +28377,20 @@ function ThinkingRow({ text, live, at, ms, viewKey, textInteractionSource }) {
   const atEnd = (0, import_react34.useRef)(view.current?.atEnd ?? true);
   const [open, setOpen] = (0, import_react34.useState)(view.current?.open ?? false);
   const [fade, setFade] = (0, import_react34.useState)(void 0);
-  const remember = (patch) => {
+  const remember2 = (patch) => {
     if (viewKey !== void 0) rowViews.set(viewKey, { ...rowViews.get(viewKey), ...patch });
   };
   const measure = () => {
     const el = box.current;
     atEnd.current = el.scrollHeight - el.scrollTop - el.clientHeight < 2;
-    remember({ atEnd: atEnd.current, top: el.scrollTop });
+    remember2({ atEnd: atEnd.current, top: el.scrollTop });
     const above = el.scrollTop > 0;
     setFade(above && !atEnd.current ? "both" : above ? "top" : !atEnd.current ? "bottom" : void 0);
   };
   const toggle = (event) => {
     const next = event.currentTarget.open;
     if (next) atEnd.current = true;
-    remember({ open: next });
+    remember2({ open: next });
     setOpen(next);
   };
   (0, import_react34.useLayoutEffect)(() => {
@@ -37427,10 +37427,154 @@ function notificationRows({ statuses, roster, approvals = [] }) {
   return rows2;
 }
 
+// src/client/push.js
+var ENDPOINT_KEY = "ds-bot:push-endpoint";
+var PRESENCE_MS = 5e3;
+var supported = () => typeof navigator !== "undefined" && "serviceWorker" in navigator && typeof window !== "undefined" && window.isSecureContext === true;
+var endpointMemory;
+var lastPresence = 0;
+function pushEndpoint() {
+  if (endpointMemory !== void 0) return endpointMemory;
+  try {
+    endpointMemory = window.localStorage.getItem(ENDPOINT_KEY) ?? null;
+  } catch {
+    endpointMemory = null;
+  }
+  return endpointMemory ?? void 0;
+}
+var pushOn = () => pushEndpoint() !== void 0;
+var canPush = supported;
+var remember = (endpoint) => {
+  endpointMemory = endpoint ?? null;
+  try {
+    if (endpoint === void 0) window.localStorage.removeItem(ENDPOINT_KEY);
+    else window.localStorage.setItem(ENDPOINT_KEY, endpoint);
+  } catch {
+  }
+};
+function keyBytes(text) {
+  const base64 = String(text ?? "").replaceAll("-", "+").replaceAll("_", "/");
+  const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+  const raw = window.atob(padded);
+  return Uint8Array.from(raw, (character) => character.codePointAt(0));
+}
+async function registration() {
+  if (!supported()) return void 0;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    return existing ?? await navigator.serviceWorker.register("sw.js", { scope: "./" });
+  } catch {
+    return void 0;
+  }
+}
+async function enablePush({ muted = [], label } = {}) {
+  if (!supported()) return "unavailable";
+  let permission = Notification.permission;
+  if (permission === "default") {
+    try {
+      permission = await Notification.requestPermission();
+    } catch {
+      permission = "denied";
+    }
+  }
+  if (permission !== "granted") return "denied";
+  const worker = await registration();
+  if (worker === void 0) return "unavailable";
+  try {
+    const state = await call("push-state");
+    const current2 = await worker.pushManager.getSubscription();
+    const subscription = current2 ?? await worker.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyBytes(state.publicKey)
+    });
+    const json = subscription.toJSON();
+    await call("push-subscribe", {
+      subscription: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } },
+      enabled: true,
+      muted,
+      ...label === void 0 ? {} : { label }
+    });
+    remember(json.endpoint);
+    return "on";
+  } catch {
+    return "unavailable";
+  }
+}
+async function disablePush() {
+  const endpoint = pushEndpoint();
+  try {
+    const worker = await navigator.serviceWorker?.getRegistration();
+    const subscription = await worker?.pushManager?.getSubscription();
+    await subscription?.unsubscribe();
+  } catch {
+  }
+  remember(void 0);
+  if (endpoint !== void 0) await call("push-unsubscribe", { endpoint }).catch(() => void 0);
+}
+async function syncPushPrefs({ enabled, muted }) {
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return;
+  await call("push-prefs", { endpoint, enabled, muted: Object.keys(muted ?? {}).filter((id) => muted[id] === true) }).catch(() => void 0);
+}
+function reportPresence({ sessionId, visible, focused, now = false }) {
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return;
+  const at = Date.now();
+  if (!now && at - lastPresence < PRESENCE_MS) return;
+  lastPresence = at;
+  void call("push-presence", {
+    endpoint,
+    sessionId: sessionId ?? void 0,
+    visible: visible === true,
+    focused: focused === true
+  }).catch(() => void 0);
+}
+async function resumePush({ muted = {}, label } = {}) {
+  if (!supported()) return false;
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return false;
+  const worker = await navigator.serviceWorker?.getRegistration();
+  const subscription = await worker?.pushManager?.getSubscription().catch(() => void 0);
+  if (subscription === void 0 || subscription === null) {
+    remember(void 0);
+    return false;
+  }
+  const json = subscription.toJSON();
+  if (json.endpoint !== endpoint) {
+    remember(json.endpoint);
+  }
+  await call("push-subscribe", {
+    subscription: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } },
+    enabled: true,
+    muted: Object.keys(muted).filter((id) => muted[id] === true),
+    ...label === void 0 ? {} : { label }
+  }).catch(() => void 0);
+  return true;
+}
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type === "ds-bot:resubscribe") remember(void 0);
+  });
+}
+
 // src/client/notifications.js
 var import_react52 = require("react");
-var shellNotify = (notice) => Promise.resolve(bridge()?.notify?.(notice)).catch(() => {
-});
+var shellNotify = (notice) => {
+  const shell = bridge();
+  if (typeof shell?.notify === "function") return Promise.resolve(shell.notify(notice)).catch(() => {
+  });
+  if (pushOn()) return Promise.resolve();
+  try {
+    if (typeof Notification !== "function" || Notification.permission !== "granted") return Promise.resolve();
+    const note = new Notification(notice.title, { body: notice.body, tag: `ds-bot-${notice.sessionId ?? ""}` });
+    note.onclick = () => {
+      window.focus();
+      note.close();
+    };
+  } catch {
+  }
+  return Promise.resolve();
+};
 var bridge = () => typeof window === "undefined" ? void 0 : window.dsBotApp;
 var prefsNow = () => readNotifyPrefs(typeof localStorage === "undefined" ? null : localStorage.getItem(NOTIFY_KEY));
 var savePrefs = (next) => {
@@ -37455,6 +37599,7 @@ function useNotifyPrefs() {
 }
 function changeNotify(change) {
   current = savePrefs(writeNotifyPrefs(current, change));
+  void syncPushPrefs({ enabled: current.enabled, muted: current.muted });
   for (const run2 of listeners2) run2();
   return current;
 }
@@ -37469,8 +37614,26 @@ function NotificationWatcher({ useSessions, useSessionStatus, useRoster, useWork
     shell?.onOpenSession?.((sessionId) => {
       actions.openSession?.(sessionId);
     });
+    void resumePush({ muted: prefsNow().muted });
     return void 0;
   }, []);
+  (0, import_react52.useEffect)(() => {
+    const tell = () => reportPresence({
+      sessionId: viewing ?? void 0,
+      visible: document.visibilityState !== "hidden",
+      focused: document.hasFocus?.() !== false,
+      now: true
+    });
+    tell();
+    window.addEventListener("focus", tell);
+    window.addEventListener("blur", tell);
+    document.addEventListener("visibilitychange", tell);
+    return () => {
+      window.removeEventListener("focus", tell);
+      window.removeEventListener("blur", tell);
+      document.removeEventListener("visibilitychange", tell);
+    };
+  }, [viewing]);
   (0, import_react52.useEffect)(() => {
     const prefs = prefsNow();
     const open = document.hasFocus?.() !== false && document.visibilityState !== "hidden";
@@ -37500,9 +37663,10 @@ function NotificationWatcher({ useSessions, useSessionStatus, useRoster, useWork
 function NotificationsRow() {
   const prefs = useNotifyPrefs();
   const [permission, setPermission] = (0, import_react52.useState)(void 0);
+  const [working, setWorking] = (0, import_react52.useState)(false);
   (0, import_react52.useEffect)(() => {
     let stopped = false;
-    void Promise.resolve(bridge()?.notifyStatus?.()).then((value) => {
+    void Promise.resolve(bridge()?.notifyStatus?.() ?? (typeof Notification === "function" ? Notification.permission : void 0)).then((value) => {
       if (!stopped) setPermission(value);
     }).catch(() => {
     });
@@ -37511,6 +37675,22 @@ function NotificationsRow() {
     };
   }, []);
   const denied = permission === "denied";
+  const toggle = async (next) => {
+    changeNotify({ enabled: next });
+    if (working) return;
+    setWorking(true);
+    try {
+      if (next) {
+        const result = await enablePush({ muted: Object.keys(prefs.muted).filter((id) => prefs.muted[id] === true) });
+        setPermission(result === "denied" ? "denied" : typeof Notification === "function" ? Notification.permission : void 0);
+      } else {
+        await disablePush();
+        setPermission(typeof Notification === "function" ? Notification.permission : void 0);
+      }
+    } finally {
+      setWorking(false);
+    }
+  };
   return (0, import_react52.createElement)(
     "div",
     { className: "bt-set-row" },
@@ -37524,7 +37704,9 @@ function NotificationsRow() {
     (0, import_react52.createElement)("div", { className: "bt-set-control" }, (0, import_react52.createElement)(Switch, {
       label: t("Notifications"),
       on: prefs.enabled === true,
-      onChange: (next) => changeNotify({ enabled: next })
+      onChange: (next) => {
+        void toggle(next);
+      }
     }))
   );
 }
