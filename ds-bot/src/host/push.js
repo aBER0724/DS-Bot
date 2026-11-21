@@ -258,17 +258,30 @@ export function install(rt) {
     })().catch(error => rt.warn?.('ds-bot: push failed: %s', error))
   }
 
-  // The service worker itself: the page registers it at the origin root, and it is the only
-  // place a push can be shown from when the page is closed.
-  ctx.effect(() => ctx.connection.fetch.register({
-    path: SW_PATH,
-    methods: ['GET'],
-    requestBody: 'buffered',
-    fetch: async () => new Response(SERVICE_WORKER, {
-      status: 200,
-      headers: { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-cache' },
-    }),
-  }), 'ds-bot: push service worker')
+  // The service worker itself. It cannot live on the API channel: a worker's scope has to
+  // cover the page, so it is served from the origin root by the web server instead.
+  ctx.effect(() => {
+    const webServer = ctx.get?.('webServer')
+    if (typeof webServer?.register !== 'function') return undefined
+    const dispose = webServer.register({
+      kind: 'exact',
+      path: SW_PATH,
+      handler: (request, response) => {
+        if (request.method !== 'GET' && request.method !== 'HEAD') {
+          response.writeHead(405, { allow: 'GET, HEAD' })
+          response.end()
+          return
+        }
+        response.writeHead(200, {
+          'content-type': 'text/javascript; charset=utf-8',
+          // A worker is fetched on every start; an old copy must not outlive the plugin.
+          'cache-control': 'no-cache',
+        })
+        response.end(request.method === 'HEAD' ? undefined : SERVICE_WORKER)
+      },
+    })
+    return () => { dispose() }
+  }, 'ds-bot: push service worker')
 
   Object.assign(rt, { pushNotice, pushEndpoint, pushPublicKey: async () => (await state()).vapid.publicKey })
 }

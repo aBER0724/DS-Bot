@@ -126,7 +126,6 @@ test('apply registers listeners and effects in a fixed order', (t) => {
     'on session/event',
     'effect ds-bot: mobile room signals',
     'effect ds-bot: push service worker',
-    'route GET /sw.js',
     'on agent/status',
     'on session/event',
     'on agent/assistant-stream',

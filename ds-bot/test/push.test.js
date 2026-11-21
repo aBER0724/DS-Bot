@@ -138,9 +138,8 @@ test('a push names the conversation and never the message', () => {
 
 function bench() {
   const home = mkdtempSync(join(tmpdir(), 'ds-bot-push-'))
-  const ctx = fakeContext()
   const routes = []
-  ctx.connection = { fetch: { register: route => { routes.push(route); return () => {} } } }
+  const ctx = fakeContext({ services: { webServer: { register: route => { routes.push(route); return () => {} } } } })
   const warnings = []
   const rt = { ctx, home, warn: (...args) => warnings.push(args) }
   install(rt)
@@ -252,14 +251,23 @@ test('the service worker is served at the origin root', async () => {
   const { routes } = bench()
   const route = routes.find(entry => entry.path === '/sw.js')
   assert.ok(route, 'no /sw.js route')
-  assert.deepEqual(route.methods, ['GET'])
-  const response = await route.fetch(new Request('https://example.test/sw.js'))
-  assert.equal(response.headers.get('content-type'), 'text/javascript; charset=utf-8')
-  const text = await response.text()
-  assert.equal(text, SERVICE_WORKER)
-  assert.match(text, /addEventListener\('push'/)
-  assert.match(text, /showNotification/)
-  assert.doesNotMatch(text, /\\$\{/)
+  assert.equal(route.kind, 'exact')
+  const answer = (method = 'GET') => {
+    const out = { code: undefined, headers: undefined, body: undefined, ended: false }
+    route.handler({ method }, {
+      writeHead(code, headers) { out.code = code; out.headers = headers },
+      end(body) { out.body = body; out.ended = true },
+    })
+    return out
+  }
+  const get = answer()
+  assert.equal(get.code, 200)
+  assert.equal(get.headers['content-type'], 'text/javascript; charset=utf-8')
+  assert.equal(get.body, SERVICE_WORKER)
+  assert.match(get.body, /addEventListener\('push'/)
+  assert.match(get.body, /showNotification/)
+  assert.equal(answer('HEAD').body, undefined)
+  assert.equal(answer('POST').code, 405)
 })
 
 function waitFor(test, timeoutMs = 2000) {
