@@ -129,6 +129,10 @@ In **Settings** → **Usage**, you can see token usage by time, by bot and by mo
 
 Every Bot sends the output of its shell commands through [rtk](https://github.com/rtk-ai/rtk), which prints a compact form of the same command with the same exit code, and its long conversations through [billion-context](https://github.com/ranxianglei/billion-context), which compresses a Session's model traffic so one conversation can run for days. Both are on by default and need no setup: DS Bot installs the Apache-2.0 edition of rtk in the team's data folder when `rtk` is not on `PATH`, and a machine without it runs every command unchanged. `DS_BOT_RTK=0` and `DS_BOT_BILLION_CONTEXT=0` turn them off. With billion-context on, a Bot that runs out of room moves to a fresh part of its chat instead of condensing the one it is in, and `read_own_chat` still searches every part.
 
+### Notifications
+
+In a browser — including DSH Web installed as an app — turning notifications on in **Settings** asks the browser for permission and subscribes the device to Web Push: a Bot that answers, a card that waits for you, or a group that calls you with `@you` reaches the device even while the page is closed. The notification names the conversation and nothing else, and a conversation you are already looking at is not announced. Without HTTPS, or on a browser with no service worker, the page still notifies while it is open. The desktop app keeps using its own system notifications.
+
 ## Data
 
 All data stays on your own computer: in the folder you chose on first start in the desktop app (`~/.ds-bot` by default), or in `bot/` and `sessions/` in the DSH home folder (`~/.dsh` by default) for the plugin. Uninstalling the app or the plugin does not delete this data.
