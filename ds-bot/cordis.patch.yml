@@ -23,3 +23,37 @@
 # the seat's child slots may render them, so DSH's own shell stays off.
 - id: ui-settings-general
   disabled: true
+
+# Token saving for every Session in this profile, on by default (see
+# docs/plans/2026-11-20-token-saving.md).
+#
+# rtk prints a compact form of a shell command's output. The row rewrites only the command
+# text at the executor's `resolve`, so workdir, timeout, environment, exit code and sandbox
+# confinement stay as they are, and a machine without rtk runs every command unchanged.
+#
+# billion-context compresses a long Session's model traffic itself, which is why DSH's own
+# compaction stands down: a DSH checkpoint would shadow the raw history it compresses from.
+# Its gate entry carries the service the agent presets wait for before they resolve, so both
+# rows must stay whatever happens to the compression plugin. DS_BOT_BILLION_CONTEXT=0 turns
+# it off — the mock bench does, because a scripted model needs the prompt as written.
+- insert:
+    - id: rtk
+      name: ds-bot/rtk
+    - id: bili-native
+      name: ds-bot/bili
+      disabled: !!js process.env.DS_BOT_BILLION_CONTEXT === '0'
+    - id: bili-compaction-gate
+      name: ds-bot/bili-gate
+# Without billion-context the gate entry above stays and leaves every row stock, so DSH's
+# own compaction is back on; with it, compression is billion-context's alone.
+- id: compaction-basic
+  config:
+    auto: !!js process.env.DS_BOT_BILLION_CONTEXT === '0'
+- id: preset-standard
+  inject: [biliBasicCompactionPolicy]
+- id: preset-ptc
+  inject: [biliBasicCompactionPolicy]
+- id: preset-minimal
+  inject: [biliBasicCompactionPolicy]
+- id: preset-cordis
+  inject: [biliBasicCompactionPolicy]
