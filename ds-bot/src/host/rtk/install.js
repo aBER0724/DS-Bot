@@ -9,7 +9,7 @@
 import { execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readdirSync } from 'node:fs'
-import { chmod, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, copyFile, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
@@ -130,9 +130,14 @@ export async function installRtk({ dir, fetchImpl = fetch, log = () => {}, versi
     await unpack(file, work)
     const binary = join(work, BINARY)
     if (!existsSync(binary)) throw new Error(`no ${BINARY} in ${asset}`)
+    // The unpacked binary usually sits on another filesystem than the team's data folder
+    // (/tmp in a container, the data volume beside it), so it is copied into the target
+    // folder first and renamed there: the rename stays atomic and never crosses devices.
     await mkdir(join(dir, tag), { recursive: true })
-    await rename(binary, existing)
-    await chmod(existing, 0o755)
+    const staging = `${existing}.${String(process.pid)}.tmp`
+    await copyFile(binary, staging)
+    await chmod(staging, 0o755)
+    await rename(staging, existing)
     return existing
   } catch (error) {
     log(`ds-bot: rtk was not installed: ${error.message ?? error}`)
