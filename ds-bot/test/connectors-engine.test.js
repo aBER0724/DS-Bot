@@ -2,12 +2,16 @@
 // real node:http upstream, and mail on fake transports. No network leaves the
 // test process (fakes listen on 127.0.0.1 or answer in memory).
 import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
 import { createServer } from 'node:http'
 import { EventEmitter } from 'node:events'
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
+import { promisify } from 'node:util'
+
+const execFileP = promisify(execFile)
 
 process.env.DS_BOT_GITHUB_OAUTH_CLIENT_ID = 'test-gh-client'
 
@@ -46,6 +50,9 @@ const AS = {
   code_challenge_methods_supported: ['S256'],
 }
 const notFound = () => new Response('not found', { status: 404 })
+
+const { imapOptions } = await import('../src/host/connectors/mail/transport.js')
+const { IMAP_ID } = await import('../src/host/connectors/mail/presets.js')
 
 test('discovery follows WWW-Authenticate, well-known, and the MCP origin fallback', async () => {
   // WWW-Authenticate points at the PRM; the PRM names the AS.
@@ -774,8 +781,6 @@ test('removing one of two rows for the same address keeps the shared secret', as
   assert.equal(rt.secretValue(mailSecretName(address, 'PASSWORD')), undefined)
 })
 
-const { imapOptions } = await import('../src/host/connectors/mail/transport.js')
-const { IMAP_ID } = await import('../src/host/connectors/mail/presets.js')
 
 test('163 and 126 presets send the IMAP ID identity', () => {
   for (const domain of ['163.com', '126.com']) {
@@ -1214,4 +1219,17 @@ test('an imported address keeps its token as a secret reference and sends the va
   // What the gateway sends: the address with the value in it, and never the state's text.
   assert.equal(rt.connectorsInternals.upstreamOf(id).url, 'https://desk.example.com/mcp?token=tok-imported-1')
   assert.ok(!readFileSync(join(home, 'state.json'), 'utf8').includes('tok-imported-1'))
+})
+
+test('loading oauth does not load @modelcontextprotocol/client at import time', async () => {
+  const script = `
+    import { registerHooks } from 'node:module'
+    registerHooks({ resolve(specifier, context, next) {
+      if (specifier === '@modelcontextprotocol/client') throw new Error('MCP client loaded at import time')
+      return next(specifier, context)
+    } })
+    await import(${JSON.stringify(new URL('../src/host/connectors/oauth.js', import.meta.url).href)})
+  `
+  await execFileP(process.execPath, ['--input-type=module', '-e', script])
+
 })
