@@ -1696,6 +1696,19 @@ var JA = {
   "Add another": "さらに追加",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud などの IMAP メール",
   "Other MCP server": "その他の MCP サーバー",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "プラグインのページ",
+  "Header name": "ヘッダー名",
+  "Remove this header": "このヘッダーを削除",
+  "+ Add a header": "+ ヘッダーを追加",
+  "Change headers…": "認証ヘッダーを変更…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "トークンが必要な場合は、左にヘッダー名、右に値を入れてください。値は DS Bot のシークレットに保管されます。",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "値を空のままにすると、設定済みの値を使います。行を削除したヘッダーは取り除かれます。",
+  "A header name may use only letters, digits and - _ .": "ヘッダー名に使えるのは英数字と - _ . だけです",
+  "A header value must stay on one line": "ヘッダーの値は 1 行にしてください",
+  "A header value must be at least 4 characters": "ヘッダーの値は 4 文字以上にしてください",
+  "The server answered 401: the token or headers are wrong": "サーバーが 401 を返しました。トークンかヘッダーが違います",
+  "Only an added server has authentication headers": "認証ヘッダーがあるのは自分で追加したサーバーだけです",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "URL・コマンドを指定、または Claude Desktop、Cursor、VS Code からインポート",
   "Kind of server": "サーバーの種類",
   "Nothing matches": "一致するコネクタがありません",
@@ -4414,6 +4427,19 @@ var KO = {
   "Add another": "추가 연결",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud 및 기타 IMAP 메일",
   "Other MCP server": "기타 MCP 서버",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "플러그인 페이지",
+  "Header name": "헤더 이름",
+  "Remove this header": "이 헤더 삭제",
+  "+ Add a header": "+ 헤더 추가",
+  "Change headers…": "인증 헤더 변경…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "토큰이 필요하면 왼쪽에 헤더 이름, 오른쪽에 값을 넣으세요. 값은 DS Bot 시크릿에 보관됩니다.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "값을 비워 두면 설정된 값을 그대로 씁니다. 줄을 지운 헤더는 제거됩니다.",
+  "A header name may use only letters, digits and - _ .": "헤더 이름에는 영문, 숫자, - _ . 만 쓸 수 있습니다",
+  "A header value must stay on one line": "헤더 값은 한 줄이어야 합니다",
+  "A header value must be at least 4 characters": "헤더 값은 4자 이상이어야 합니다",
+  "The server answered 401: the token or headers are wrong": "서버가 401을 돌려줬습니다. 토큰이나 헤더가 잘못되었습니다",
+  "Only an added server has authentication headers": "인증 헤더는 직접 추가한 서버에만 있습니다",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "주소나 명령어를 입력하거나 Claude Desktop, Cursor, VS Code에서 가져오기",
   "Kind of server": "서버 유형",
   "Nothing matches": "일치하는 커넥터 없음",
@@ -7135,6 +7161,19 @@ var ES = {
   "Add another": "Añadir otro",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud y otros correos IMAP",
   "Other MCP server": "Otro servidor MCP",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "Páginas de los plugins",
+  "Header name": "Nombre de la cabecera",
+  "Remove this header": "Quitar esta cabecera",
+  "+ Add a header": "+ Añadir una cabecera",
+  "Change headers…": "Cambiar cabeceras…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "¿Necesita un token? Escribe el nombre de la cabecera y pega su valor; DS Bot lo guarda como secreto.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Deja el valor vacío para mantener el actual. La cabecera que quites se elimina.",
+  "A header name may use only letters, digits and - _ .": "El nombre de la cabecera solo admite letras, dígitos y - _ .",
+  "A header value must stay on one line": "El valor de la cabecera debe caber en una línea",
+  "A header value must be at least 4 characters": "El valor de la cabecera debe tener al menos 4 caracteres",
+  "The server answered 401: the token or headers are wrong": "El servidor respondió 401: el token o las cabeceras no son correctos",
+  "Only an added server has authentication headers": "Solo un servidor añadido tiene cabeceras de autenticación",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Una dirección, un comando o uno de Claude Desktop, Cursor o VS Code",
   "Kind of server": "Tipo de servidor",
   "Nothing matches": "No hay coincidencias",
@@ -9814,6 +9853,19 @@ var FR = {
   "Add another": "En ajouter un autre",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud et autres messageries IMAP",
   "Other MCP server": "Autre serveur MCP",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "Pages des greffons",
+  "Header name": "Nom de l'en-tête",
+  "Remove this header": "Retirer cet en-tête",
+  "+ Add a header": "+ Ajouter un en-tête",
+  "Change headers…": "Modifier les en-têtes…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "Besoin d'un jeton ? Indiquez le nom de l'en-tête et collez sa valeur ; DS Bot la garde comme secret.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Laissez une valeur vide pour garder celle qui est définie. Un en-tête retiré est supprimé.",
+  "A header name may use only letters, digits and - _ .": "Le nom d'un en-tête n'accepte que lettres, chiffres et - _ .",
+  "A header value must stay on one line": "La valeur d'un en-tête doit tenir sur une ligne",
+  "A header value must be at least 4 characters": "La valeur d'un en-tête doit faire au moins 4 caractères",
+  "The server answered 401: the token or headers are wrong": "Le serveur a répondu 401 : le jeton ou les en-têtes sont faux",
+  "Only an added server has authentication headers": "Seul un serveur ajouté a des en-têtes d’authentification",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Une adresse, une commande ou une importation depuis Claude Desktop, Cursor ou VS Code",
   "Kind of server": "Type de serveur",
   "Nothing matches": "Aucun connecteur correspondant",
@@ -12532,6 +12584,19 @@ var DE = {
   "Add another": "Weiteres hinzufügen",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ, 163, 126, Gmail, iCloud und andere IMAP-Postfächer",
   "Other MCP server": "Anderer MCP-Server",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "Plugin-Seiten",
+  "Header name": "Header-Name",
+  "Remove this header": "Diesen Header entfernen",
+  "+ Add a header": "+ Header hinzufügen",
+  "Change headers…": "Authentifizierungs-Header ändern…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "Token nötig? Header-Namen eintragen und den Wert einfügen; DS Bot speichert ihn als Secret.",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "Ein leeres Feld behält den gesetzten Wert. Ein entfernter Header wird gelöscht.",
+  "A header name may use only letters, digits and - _ .": "Ein Header-Name darf nur Buchstaben, Ziffern und - _ . enthalten",
+  "A header value must stay on one line": "Ein Header-Wert muss in einer Zeile bleiben",
+  "A header value must be at least 4 characters": "Ein Header-Wert braucht mindestens 4 Zeichen",
+  "The server answered 401: the token or headers are wrong": "Der Server antwortete 401: Token oder Header stimmen nicht",
+  "Only an added server has authentication headers": "Nur ein selbst hinzugefügter Server hat Authentifizierungs-Header",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "Adresse, Befehl oder Import aus Claude Desktop, Cursor oder VS Code",
   "Kind of server": "Servertyp",
   "Nothing matches": "Keine passenden Konnektoren",
@@ -15334,6 +15399,19 @@ var ZH = {
   "Add another": "再添加一个",
   "QQ, 163, 126, Gmail, iCloud, and other IMAP mail": "QQ、163、126、Gmail、iCloud 等 IMAP 邮箱",
   "Other MCP server": "其他 MCP 服务器",
+  "Bearer …": "Bearer …",
+  "Plugin pages": "插件页面",
+  "Header name": "认证头名",
+  "Remove this header": "删掉这条认证头",
+  "+ Add a header": "+ 再加一条",
+  "Change headers…": "改认证头…",
+  "Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.": "服务器要令牌就填：左边是头名、右边是值。值存在 DS Bot 密钥里，不写进配置。",
+  "Leave a value empty to keep the one that is set. A header you take away is removed.": "值留空就保持原来的。删掉一行的头会被移除。",
+  "A header name may use only letters, digits and - _ .": "认证头名只能用字母、数字和 - _ .",
+  "A header value must stay on one line": "认证头的值不能换行",
+  "A header value must be at least 4 characters": "认证头的值至少要 4 个字符",
+  "The server answered 401: the token or headers are wrong": "服务器返回 401：token 或认证头不对",
+  "Only an added server has authentication headers": "只有自己添加的服务器才有认证头",
   "An address, a command, or one from Claude Desktop, Cursor, or VS Code": "填地址或命令，或从 Claude Desktop、Cursor、VS Code 导入",
   "Kind of server": "服务器类型",
   "Nothing matches": "没有匹配的连接器",
@@ -18599,6 +18677,12 @@ button.bt-set-row:hover .bt-chevron{transform:translateX(2px);color:var(--bt-ink
 .bt-connector-aside{align-self:flex-start}
 .bt-connector-error{padding-left:48px;font-size:12px;line-height:16px;color:var(--bt-danger)}
 .bt-connector-banner{padding:0 0 8px}
+.bt-connector-headers-block{display:flex;flex-direction:column;gap:6px}
+.bt-connector-headers{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.bt-connector-header-row{display:flex;align-items:center;gap:6px;width:100%}
+.bt-connector-header-name{flex:0 0 34%;min-width:0}
+.bt-connector-header-value{flex:1 1 0;min-width:0}
+.bt-connector-add-header{align-self:flex-start}
 .bt-mail-form{gap:10px}
 .bt-mail-seg{align-self:flex-start}
 /* Six providers share the width: a label that wraps would leave its fixed-height
@@ -24699,7 +24783,7 @@ var scopeLabel = (scope, roster) => {
   return names.length === 0 ? t("No Bot") : names.join(t(" and "));
 };
 var when = (time) => Number.isFinite(time) ? new Date(time).toLocaleString(dateLocale(), { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
-function MaskedInput({ value, onChange, onEnter, label, autoFocus = false, disabled = false }) {
+function MaskedInput({ value, onChange, onEnter, label, placeholder, autoFocus = false, disabled = false }) {
   return (0, import_react19.createElement)("input", {
     className: "bt-secret-input",
     type: MASK_BY_CSS ? "text" : "password",
@@ -24716,7 +24800,7 @@ function MaskedInput({ value, onChange, onEnter, label, autoFocus = false, disab
     "data-bwignore": "",
     "data-form-type": "other",
     "aria-label": label,
-    placeholder: label ?? t("Paste or type the key"),
+    placeholder: placeholder ?? label ?? t("Paste or type the key"),
     onChange: (event) => onChange(event.target.value),
     onKeyDown: (event) => {
       if (event.key !== "Enter" || event.nativeEvent.isComposing || event.keyCode === 229) return;
@@ -28764,6 +28848,26 @@ var openSignIn = (win, id, view) => {
   }
   win.close();
 };
+function HeadersPanel({ connector, actions, run: run2, onDone }) {
+  const names = connector.headerNames ?? [];
+  const [rows2, setRows] = (0, import_react29.useState)(() => names.length > 0 ? names.map((name) => ({ name, value: "" })) : [{ name: "Authorization", value: "" }]);
+  const save = () => void run2(actions.connectorSet(connector.id, { headers: headerSpecOf(rows2) }), () => {
+    onDone?.();
+  });
+  return (0, import_react29.createElement)(
+    "div",
+    { className: "bt-connector-form" },
+    (0, import_react29.createElement)("span", { className: "bt-set-hint" }, t("Leave a value empty to keep the one that is set. A header you take away is removed.")),
+    (0, import_react29.createElement)(HeaderRows, { rows: rows2, onChange: setRows }),
+    (0, import_react29.createElement)(
+      "div",
+      { className: "bt-connector-form-row" },
+      (0, import_react29.createElement)("span", { className: "bt-connector-wait" }),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: onDone }, t("Cancel")),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: save }, t("Save"))
+    )
+  );
+}
 function ConnectorRow({ connector, actions }) {
   const [form, setForm] = (0, import_react29.useState)(null);
   const [busy, setBusy] = (0, import_react29.useState)(false);
@@ -28806,6 +28910,9 @@ function ConnectorRow({ connector, actions }) {
       connector.custom ? (0, import_react29.createElement)("button", { key: "remove", type: "button", className: "bt-soft bt-soft-sm", disabled: busy, onClick: () => void run2(actions.connectorDisconnect(connector.id)) }, t("Remove")) : null
     ];
   }
+  if (connector.custom === true && !pending && !form && connector.state !== "needs-client") {
+    actionsNode = [button(t("Change headers…"), () => setForm("headers")), ...Array.isArray(actionsNode) ? actionsNode : [actionsNode]];
+  }
   return (0, import_react29.createElement)(
     "div",
     { ref: row, className: "bt-connector", "data-state": connector.state },
@@ -28829,6 +28936,10 @@ function ConnectorRow({ connector, actions }) {
     (0, import_react29.createElement)(SignInPanel, { connector, actions, run: run2, onUseToken: () => setForm("token") }),
     connector.state === "needs-client" && !pending?.kind ? (0, import_react29.createElement)(ClientPanel, { connector, actions, run: run2 }) : null,
     form === "token" ? (0, import_react29.createElement)(TokenPanel, { connector, actions, run: run2, onDone: () => {
+      setForm(null);
+      setError(null);
+    } }) : null,
+    form === "headers" ? (0, import_react29.createElement)(HeadersPanel, { connector, actions, run: run2, onDone: () => {
       setForm(null);
       setError(null);
     } }) : null,
@@ -29055,6 +29166,35 @@ function MailCatalogRow({ mail, actions }) {
     open ? (0, import_react29.createElement)(MailForm, { mail, actions, onClose: () => setOpen(false) }) : null
   );
 }
+function HeaderRows({ rows: rows2, onChange }) {
+  const setRow = (index, patch) => onChange(rows2.map((row, at) => at === index ? { ...row, ...patch } : row));
+  return (0, import_react29.createElement)(
+    "div",
+    { className: "bt-connector-headers" },
+    rows2.map((row, index) => (0, import_react29.createElement)(
+      "div",
+      { key: index, className: "bt-connector-header-row" },
+      (0, import_react29.createElement)("input", { className: "bt-input bt-connector-header-name", "aria-label": t("Header name"), placeholder: "Authorization", value: row.name, spellCheck: false, autoComplete: "off", onChange: (e) => setRow(index, { name: e.target.value }) }),
+      (0, import_react29.createElement)("label", { className: "bt-q-field bt-secret-field bt-connector-header-value" }, (0, import_react29.createElement)(MaskedInput, { value: row.value, onChange: (value) => setRow(index, { value }), label: t("Value"), placeholder: t("Bearer …") })),
+      (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link", "aria-label": t("Remove this header"), onClick: () => onChange(rows2.filter((_, at) => at !== index)) }, t("Remove"))
+    )),
+    (0, import_react29.createElement)("button", { type: "button", className: "bt-connector-link bt-connector-add-header", onClick: () => onChange([...rows2, { name: "", value: "" }]) }, t("+ Add a header"))
+  );
+}
+var headerPatchOf = (rows2) => {
+  const spec = headerSpecOf(rows2);
+  const filled = Object.fromEntries(Object.entries(spec).filter(([, value]) => value !== ""));
+  return Object.keys(filled).length > 0 ? { headers: filled } : {};
+};
+var headerSpecOf = (rows2) => {
+  const spec = {};
+  for (const row of rows2) {
+    const header = row.name.trim();
+    if (header !== "") spec[header] = row.value.trim();
+  }
+  return spec;
+};
+var EMPTY_HEADER = { name: "Authorization", value: "" };
 function AddMenu({ actions, run: run2 }) {
   const [kind, setKind] = (0, import_react29.useState)(null);
   const [name, setName] = (0, import_react29.useState)("");
@@ -29065,12 +29205,14 @@ function AddMenu({ actions, run: run2 }) {
   const [picked, setPicked] = (0, import_react29.useState)([]);
   const row = (0, import_react29.useRef)(null);
   useMorph(row, `${kind}:${found === null}`);
+  const [headers, setHeaders] = (0, import_react29.useState)([EMPTY_HEADER]);
   const reset = () => {
     setKind(null);
     setName("");
     setUrl("");
     setOauth(false);
     setCommand("");
+    setHeaders([EMPTY_HEADER]);
     setFound(null);
     setPicked([]);
   };
@@ -29117,6 +29259,13 @@ function AddMenu({ actions, run: run2 }) {
       ))) : [
         (0, import_react29.createElement)("input", { key: "name", className: "bt-input", "aria-label": t("Name"), placeholder: t("Name"), value: name, onChange: (e) => setName(e.target.value) }),
         kind === "url" ? (0, import_react29.createElement)("input", { key: "url", className: "bt-input", "aria-label": t("Server address"), placeholder: "https://…", value: url, spellCheck: false, onChange: (e) => setUrl(e.target.value) }) : (0, import_react29.createElement)("input", { key: "cmd", className: "bt-input", "aria-label": t("Command"), placeholder: t("Command, e.g. npx -y some-mcp"), value: command, spellCheck: false, onChange: (e) => setCommand(e.target.value) }),
+        // A server that needs a token takes it as a header; the value is kept as a secret.
+        kind === "url" ? (0, import_react29.createElement)(
+          "div",
+          { key: "headers", className: "bt-connector-headers-block" },
+          (0, import_react29.createElement)("span", { className: "bt-set-hint" }, t("Needs a token? Name the header and paste its value; DS Bot keeps it as a secret.")),
+          (0, import_react29.createElement)(HeaderRows, { rows: headers, onChange: setHeaders })
+        ) : null,
         // A command has nowhere to send a browser sign-in; only an address offers it.
         kind === "url" ? (0, import_react29.createElement)(SwitchRow, { key: "oauth", label: t("Sign in"), on: oauth, onChange: setOauth }) : null
       ],
@@ -29124,7 +29273,7 @@ function AddMenu({ actions, run: run2 }) {
         "div",
         { className: "bt-secret-row-actions" },
         (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", onClick: reset }, t("Cancel")),
-        kind === "import" ? (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: picked.length === 0, onClick: () => void run2(actions.connectorImport(picked), reset) }, t("Import {count}", { count: picked.length })) : (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: !ready, onClick: () => void run2(kind === "url" ? actions.connectorAdd({ name: name.trim(), url: url.trim(), ...oauth ? { oauth: true } : {} }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t("Add"))
+        kind === "import" ? (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: picked.length === 0, onClick: () => void run2(actions.connectorImport(picked), reset) }, t("Import {count}", { count: picked.length })) : (0, import_react29.createElement)("button", { type: "button", className: "bt-soft bt-soft-sm", disabled: !ready, onClick: () => void run2(kind === "url" ? actions.connectorAdd({ name: name.trim(), url: url.trim(), ...headerPatchOf(headers), ...oauth ? { oauth: true } : {} }) : actions.connectorAdd({ name: name.trim(), command: command.trim() }), reset) }, t("Add"))
       )
     )
   );
@@ -30712,20 +30861,20 @@ function ThinkingRow({ text, live, at, ms, viewKey, textInteractionSource }) {
   const atEnd = (0, import_react34.useRef)(view.current?.atEnd ?? true);
   const [open, setOpen] = (0, import_react34.useState)(view.current?.open ?? false);
   const [fade, setFade] = (0, import_react34.useState)(void 0);
-  const remember = (patch) => {
+  const remember2 = (patch) => {
     if (viewKey !== void 0) rowViews.set(viewKey, { ...rowViews.get(viewKey), ...patch });
   };
   const measure = () => {
     const el = box.current;
     atEnd.current = el.scrollHeight - el.scrollTop - el.clientHeight < 2;
-    remember({ atEnd: atEnd.current, top: el.scrollTop });
+    remember2({ atEnd: atEnd.current, top: el.scrollTop });
     const above = el.scrollTop > 0;
     setFade(above && !atEnd.current ? "both" : above ? "top" : !atEnd.current ? "bottom" : void 0);
   };
   const toggle = (event) => {
     const next = event.currentTarget.open;
     if (next) atEnd.current = true;
-    remember({ open: next });
+    remember2({ open: next });
     setOpen(next);
   };
   (0, import_react34.useLayoutEffect)(() => {
@@ -33856,10 +34005,19 @@ function TeamSidebar(props) {
     main ? (0, import_react37.createElement)(BotRow, { ...rowProps, bot: main, marked: markedUnread[main.id] === true }) : roster.ready ? null : bootFailed ? (0, import_react37.createElement)(BootFailed, { actions }) : (0, import_react37.createElement)("div", { className: "bt-hint" }, t("Setting up your Main Bot…")),
     (0, import_react37.createElement)("span", { className: "bt-rail-sep", "aria-hidden": true })
   );
-  const foot = wideContent ? (0, import_react37.createElement)("div", { className: "bt-leftcol-foot" }, (0, import_react37.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react37.createElement)(PluginsButton, { actions })) : (0, import_react37.createElement)(
+  const pageHub = (0, import_react37.createElement)(PanelsHub, {
+    panels: props.usePanels ? props.usePanels((value) => value) : [],
+    active: props.useActivePanel ? props.useActivePanel((value) => value) : null,
+    wide: wideContent,
+    renderSlot: props.renderSlot,
+    usePanellistGlyphs: props.usePanellistGlyphs ?? (() => /* @__PURE__ */ new Map()),
+    select: (id) => actions.selectPanel(id)
+  });
+  const foot = wideContent ? (0, import_react37.createElement)("div", { className: "bt-leftcol-foot" }, pageHub, (0, import_react37.createElement)(AccountLauncher, { seat: false, actions }), (0, import_react37.createElement)(PluginsButton, { actions })) : (0, import_react37.createElement)(
     "div",
     { className: "bt-leftcol-foot bt-leftcol-foot-rail" },
     (0, import_react37.createElement)("button", { type: "button", className: "bt-round", "aria-label": t("New…"), title: t("New…"), onClick: () => actions.openNewChat("new") }, (0, import_react37.createElement)(PlusIcon)),
+    pageHub,
     (0, import_react37.createElement)(AccountLauncher, { seat: false, actions }),
     (0, import_react37.createElement)(PluginsButton, { actions })
   );
@@ -34141,7 +34299,6 @@ function AccountLauncher({ seat = true, settingsOpen, actions }) {
       [t("Usage"), GaugeIcon, () => actions.openSettings("usage")],
       openModels ? [t("Models and API keys"), SlidersIcon, () => openModels()] : null,
       [t("Connectors"), ConnectorIcon, () => actions.openConnectors()],
-      [t("Automation tasks"), ClockIcon, () => actions.selectPanel("schedules")],
       [t("Settings"), GearIcon, () => actions.openSettings("general")]
     ].filter(Boolean),
     typeof actions.setSurface === "function" ? [[t("Classic Agent mode"), SwitchIcon, () => actions.setSurface("agent")]] : null
@@ -34303,6 +34460,70 @@ function useLandOnMainBot(roster, useSessions, actions) {
     return () => clearTimeout(timer);
   }, [mainView, roster]);
 }
+function PanelsGlyph({ panel, size, active, useEntries }) {
+  const entries2 = useEntries((value) => value);
+  const Glyph = entries2.get(panel);
+  return Glyph ? (0, import_react37.createElement)(Glyph, { size, active }) : (0, import_react37.createElement)("span", { style: { width: size, height: size }, "aria-hidden": true });
+}
+var HUB_SEAT = 45;
+var HUB_STEP = (index) => ({ x: 0, y: -(index + 1) * HUB_SEAT });
+function PanelsHub({ panels, active, wide, renderSlot, usePanellistGlyphs, select }) {
+  const pages = Array.isArray(panels) ? panels : [];
+  const [open, setOpen] = (0, import_react37.useState)(false);
+  const rootRef = (0, import_react37.useRef)(null);
+  (0, import_react37.useEffect)(() => {
+    if (!open) return void 0;
+    const away = (event) => {
+      if (rootRef.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    const key = (event) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away, true);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", away, true);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  const fan = (panel, index) => {
+    const at = HUB_STEP(index);
+    return (0, import_react37.createElement)("button", {
+      key: panel.id,
+      type: "button",
+      className: "bt-account bt-page",
+      "data-active": active === panel.id ? "" : void 0,
+      "aria-pressed": active === panel.id,
+      "aria-label": panel.label,
+      title: panel.label,
+      tabIndex: open ? 0 : -1,
+      style: { position: "absolute", left: 0, bottom: 0, transform: `translate(${at.x}px, ${at.y}px) scale(${open ? 1 : 0.4})`, opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none", transition: "transform .18s cubic-bezier(.2,0,0,1),opacity .14s ease" },
+      onClick: () => {
+        setOpen(false);
+        select(active === panel.id ? null : panel.id);
+      }
+    }, (0, import_react37.createElement)(
+      "span",
+      { className: "bt-you", "aria-hidden": true },
+      renderSlot === void 0 ? (0, import_react37.createElement)(PanelsGlyph, { panel: panel.id, size: wide ? 15 : 18, active: active === panel.id, useEntries: usePanellistGlyphs }) : renderSlot("sidebar.panellist", { size: wide ? 15 : 18, active: active === panel.id }, { only: panel.id })
+    ));
+  };
+  return (0, import_react37.createElement)(
+    "div",
+    { ref: rootRef, className: "bt-hub", "data-open": open ? "" : void 0 },
+    (0, import_react37.createElement)("button", {
+      type: "button",
+      className: "bt-account bt-hub-toggle",
+      "aria-haspopup": "menu",
+      "aria-expanded": open,
+      "aria-label": t("Plugin pages"),
+      title: t("Plugin pages"),
+      onClick: () => setOpen((value) => !value)
+    }, (0, import_react37.createElement)("span", { className: "bt-you bt-hub-mark", "aria-hidden": true }, (0, import_react37.createElement)(DotsIcon))),
+    pages.map((panel, index) => fan(panel, index))
+  );
+}
 function PluginsButton({ actions }) {
   if (!actions.hasPlugins?.()) return null;
   return (0, import_react37.createElement)(
@@ -34349,6 +34570,15 @@ function BrandName() {
   return (0, import_react37.createElement)("span", { style: { fontWeight: 600, fontSize: 14 } }, "DS Bot");
 }
 var SIDEBAR_CSS = `
+/* The aggregate 「插件页面」 button: one round control in the foot's own row. Its pages fan out
+   from its own box in an L — up, then left — ending beside 「设置」「插件」, which keep their
+   seats in the foot. Only the pressed state marks the open page. */
+.bt-hub{position:relative;display:inline-flex;flex:none}
+.bt-hub-toggle{color:var(--bt-ink-2)}
+.bt-hub-toggle:hover{color:var(--bt-ink)}
+.bt-hub-toggle[aria-expanded=true]{background:var(--bt-hover);color:var(--bt-ink)}
+.bt-hub-mark{line-height:0}
+.bt-page[data-active]{background:var(--bt-hover);color:var(--bt-ink)}
 .bt-confirm{width:100%;max-width:260px;box-sizing:border-box;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px}
 .bt-confirm-text{margin:0;font-size:13px;line-height:19px;color:var(--bt-ink-2)}
 .bt-confirm-error{margin:0;font-size:12px;line-height:17px;color:var(--bt-danger);overflow-wrap:anywhere}
@@ -42430,10 +42660,154 @@ function notificationRows({ statuses, roster, approvals = [] }) {
   return rows2;
 }
 
+// src/client/push.js
+var ENDPOINT_KEY = "ds-bot:push-endpoint";
+var PRESENCE_MS = 5e3;
+var supported = () => typeof navigator !== "undefined" && "serviceWorker" in navigator && typeof window !== "undefined" && window.isSecureContext === true;
+var endpointMemory;
+var lastPresence = 0;
+function pushEndpoint() {
+  if (endpointMemory !== void 0) return endpointMemory;
+  try {
+    endpointMemory = window.localStorage.getItem(ENDPOINT_KEY) ?? null;
+  } catch {
+    endpointMemory = null;
+  }
+  return endpointMemory ?? void 0;
+}
+var pushOn = () => pushEndpoint() !== void 0;
+var canPush = supported;
+var remember = (endpoint) => {
+  endpointMemory = endpoint ?? null;
+  try {
+    if (endpoint === void 0) window.localStorage.removeItem(ENDPOINT_KEY);
+    else window.localStorage.setItem(ENDPOINT_KEY, endpoint);
+  } catch {
+  }
+};
+function keyBytes(text) {
+  const base64 = String(text ?? "").replaceAll("-", "+").replaceAll("_", "/");
+  const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
+  const raw = window.atob(padded);
+  return Uint8Array.from(raw, (character) => character.codePointAt(0));
+}
+async function registration() {
+  if (!supported()) return void 0;
+  try {
+    const existing = await navigator.serviceWorker.getRegistration();
+    return existing ?? await navigator.serviceWorker.register("sw.js", { scope: "./" });
+  } catch {
+    return void 0;
+  }
+}
+async function enablePush({ muted = [], label } = {}) {
+  if (!supported()) return "unavailable";
+  let permission = Notification.permission;
+  if (permission === "default") {
+    try {
+      permission = await Notification.requestPermission();
+    } catch {
+      permission = "denied";
+    }
+  }
+  if (permission !== "granted") return "denied";
+  const worker = await registration();
+  if (worker === void 0) return "unavailable";
+  try {
+    const state = await call("push-state");
+    const current2 = await worker.pushManager.getSubscription();
+    const subscription = current2 ?? await worker.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyBytes(state.publicKey)
+    });
+    const json = subscription.toJSON();
+    await call("push-subscribe", {
+      subscription: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } },
+      enabled: true,
+      muted,
+      ...label === void 0 ? {} : { label }
+    });
+    remember(json.endpoint);
+    return "on";
+  } catch {
+    return "unavailable";
+  }
+}
+async function disablePush() {
+  const endpoint = pushEndpoint();
+  try {
+    const worker = await navigator.serviceWorker?.getRegistration();
+    const subscription = await worker?.pushManager?.getSubscription();
+    await subscription?.unsubscribe();
+  } catch {
+  }
+  remember(void 0);
+  if (endpoint !== void 0) await call("push-unsubscribe", { endpoint }).catch(() => void 0);
+}
+async function syncPushPrefs({ enabled, muted }) {
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return;
+  await call("push-prefs", { endpoint, enabled, muted: Object.keys(muted ?? {}).filter((id) => muted[id] === true) }).catch(() => void 0);
+}
+function reportPresence({ sessionId, visible, focused, now = false }) {
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return;
+  const at = Date.now();
+  if (!now && at - lastPresence < PRESENCE_MS) return;
+  lastPresence = at;
+  void call("push-presence", {
+    endpoint,
+    sessionId: sessionId ?? void 0,
+    visible: visible === true,
+    focused: focused === true
+  }).catch(() => void 0);
+}
+async function resumePush({ muted = {}, label } = {}) {
+  if (!supported()) return false;
+  const endpoint = pushEndpoint();
+  if (endpoint === void 0) return false;
+  const worker = await navigator.serviceWorker?.getRegistration();
+  const subscription = await worker?.pushManager?.getSubscription().catch(() => void 0);
+  if (subscription === void 0 || subscription === null) {
+    remember(void 0);
+    return false;
+  }
+  const json = subscription.toJSON();
+  if (json.endpoint !== endpoint) {
+    remember(json.endpoint);
+  }
+  await call("push-subscribe", {
+    subscription: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } },
+    enabled: true,
+    muted: Object.keys(muted).filter((id) => muted[id] === true),
+    ...label === void 0 ? {} : { label }
+  }).catch(() => void 0);
+  return true;
+}
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type === "ds-bot:resubscribe") remember(void 0);
+  });
+}
+
 // src/client/notifications.js
 var import_react58 = require("react");
-var shellNotify = (notice) => Promise.resolve(bridge()?.notify?.(notice)).catch(() => {
-});
+var shellNotify = (notice) => {
+  const shell = bridge();
+  if (typeof shell?.notify === "function") return Promise.resolve(shell.notify(notice)).catch(() => {
+  });
+  if (pushOn()) return Promise.resolve();
+  try {
+    if (typeof Notification !== "function" || Notification.permission !== "granted") return Promise.resolve();
+    const note = new Notification(notice.title, { body: notice.body, tag: `ds-bot-${notice.sessionId ?? ""}` });
+    note.onclick = () => {
+      window.focus();
+      note.close();
+    };
+  } catch {
+  }
+  return Promise.resolve();
+};
 var bridge = () => typeof window === "undefined" ? void 0 : window.dsBotApp;
 var prefsNow = () => readNotifyPrefs(typeof localStorage === "undefined" ? null : localStorage.getItem(NOTIFY_KEY));
 var savePrefs = (next) => {
@@ -42458,6 +42832,7 @@ function useNotifyPrefs() {
 }
 function changeNotify(change) {
   current = savePrefs(writeNotifyPrefs(current, change));
+  void syncPushPrefs({ enabled: current.enabled, muted: current.muted });
   for (const run2 of listeners2) run2();
   return current;
 }
@@ -42473,8 +42848,26 @@ function NotificationWatcher({ useSessions, useSessionStatus, useRoster, useWork
     shell?.onOpenSession?.((sessionId) => {
       actions.openSession?.(sessionId);
     });
+    void resumePush({ muted: prefsNow().muted });
     return void 0;
   }, []);
+  (0, import_react58.useEffect)(() => {
+    const tell = () => reportPresence({
+      sessionId: viewing ?? void 0,
+      visible: document.visibilityState !== "hidden",
+      focused: document.hasFocus?.() !== false,
+      now: true
+    });
+    tell();
+    window.addEventListener("focus", tell);
+    window.addEventListener("blur", tell);
+    document.addEventListener("visibilitychange", tell);
+    return () => {
+      window.removeEventListener("focus", tell);
+      window.removeEventListener("blur", tell);
+      document.removeEventListener("visibilitychange", tell);
+    };
+  }, [viewing]);
   (0, import_react58.useEffect)(() => {
     const prefs = prefsNow();
     const open = document.hasFocus?.() !== false && document.visibilityState !== "hidden";
@@ -42505,9 +42898,10 @@ function NotificationWatcher({ useSessions, useSessionStatus, useRoster, useWork
 function NotificationsRow() {
   const prefs = useNotifyPrefs();
   const [permission, setPermission] = (0, import_react58.useState)(void 0);
+  const [working, setWorking] = (0, import_react58.useState)(false);
   (0, import_react58.useEffect)(() => {
     let stopped = false;
-    void Promise.resolve(bridge()?.notifyStatus?.()).then((value) => {
+    void Promise.resolve(bridge()?.notifyStatus?.() ?? (typeof Notification === "function" ? Notification.permission : void 0)).then((value) => {
       if (!stopped) setPermission(value);
     }).catch(() => {
     });
@@ -42516,6 +42910,22 @@ function NotificationsRow() {
     };
   }, []);
   const denied = permission === "denied";
+  const toggle = async (next) => {
+    changeNotify({ enabled: next });
+    if (working) return;
+    setWorking(true);
+    try {
+      if (next) {
+        const result = await enablePush({ muted: Object.keys(prefs.muted).filter((id) => prefs.muted[id] === true) });
+        setPermission(result === "denied" ? "denied" : typeof Notification === "function" ? Notification.permission : void 0);
+      } else {
+        await disablePush();
+        setPermission(typeof Notification === "function" ? Notification.permission : void 0);
+      }
+    } finally {
+      setWorking(false);
+    }
+  };
   return (0, import_react58.createElement)(
     "div",
     { className: "bt-set-row" },
@@ -42529,7 +42939,9 @@ function NotificationsRow() {
     (0, import_react58.createElement)("div", { className: "bt-set-control" }, (0, import_react58.createElement)(Switch, {
       label: t("Notifications"),
       on: prefs.enabled === true,
-      onChange: (next) => changeNotify({ enabled: next })
+      onChange: (next) => {
+        void toggle(next);
+      }
     }))
   );
 }
@@ -43701,8 +44113,9 @@ function MemoryNotice({ shown }) {
     (0, import_react61.createElement)("span", { className: "bt-pill-mem-in", ref: inner }, (0, import_react61.createElement)("span", { className: "bt-pill-mem-ico" }, (0, import_react61.createElement)(MemoryIcon)), label)
   );
 }
-function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useComputer, useStore, useConversationViews, selectView, actions, PendingLearning: PendingLearning2 }) {
+function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSession, useActivity, useMemoryNews, useTurnClock, useUi, useLive, useWork, useComputer, useStore, useConversationViews, useActivePanel, selectView, actions, PendingLearning: PendingLearning2 }) {
   const roster = useRoster((value) => value);
+  const pageOpen = useActivePanel?.((value) => value !== null) === true;
   const selectedView = useStore?.((state) => state.view);
   const away = useConversationViews?.((views) => views.some((view2) => view2.id === selectedView && view2.id !== "chat")) === true && typeof selectView === "function";
   const title = useSessions((list) => list.byId[sessionId]?.displayTitle ?? list.byId[sessionId]?.title ?? "");
@@ -43786,6 +44199,7 @@ function HeaderPill({ sessionId, useRoster, useSessions, useSessionStatus, useSe
       delete document.body.dataset.btGoal;
     };
   }, [podRows]);
+  if (pageOpen) return null;
   const pill = (0, import_react61.createElement)(
     "button",
     {
@@ -52131,7 +52545,7 @@ function installAgentForks({ sessions, ownerOf, hasAgent, pending, adopt, refres
   const inFlight = /* @__PURE__ */ new Map();
   const forks = /* @__PURE__ */ new Set();
   let stopped = false;
-  const remember = (agentId, sessionId) => {
+  const remember2 = (agentId, sessionId) => {
     const entry = { agentId, sessionId };
     localJournal.set(sessionId, entry);
     pending.set(sessionId, agentId);
@@ -52185,7 +52599,7 @@ function installAgentForks({ sessions, ownerOf, hasAgent, pending, adopt, refres
       let adoption;
       const onCreated = (sessionId) => {
         created = sessionId;
-        adoption = persist(remember(agentId, sessionId));
+        adoption = persist(remember2(agentId, sessionId));
         options.onCreated?.(sessionId);
       };
       try {
@@ -52196,7 +52610,7 @@ function installAgentForks({ sessions, ownerOf, hasAgent, pending, adopt, refres
       } catch (error) {
         const rpc = error?.rpcError;
         const partial = rpc?.code === "session/workspace-attach-failed" ? rpc.details?.sessionId : void 0;
-        if (created === void 0 && typeof partial === "string") adoption = persist(remember(agentId, partial));
+        if (created === void 0 && typeof partial === "string") adoption = persist(remember2(agentId, partial));
         if (adoption !== void 0) await adoption;
         throw error;
       }
@@ -52239,7 +52653,7 @@ function installAgentForks({ sessions, ownerOf, hasAgent, pending, adopt, refres
 }
 
 // src/client/index.js
-var inject = ["sessions", "uiWorkspace", "uiConversation", "slots", "theme", "layout"];
+var inject = ["sessions", "uiWorkspace", "uiConversation", "slots", "theme", "layout", "locale"];
 var WINDOWS = globalThis.navigator?.userAgentData?.platform === "Windows" || /^Win/u.test(globalThis.navigator?.platform ?? "");
 function apply(ctx) {
   ctx.effect(() => installLocale(ctx.get("locale")), "ds-bot: interface copy");
@@ -52842,6 +53256,7 @@ function apply(ctx) {
     },
     selectPanel: (id) => {
       ctx.layout.selectPanel(id);
+      activePanel.set(id ?? null);
     },
     toggleSidebar: () => {
       ctx.layout.toggleSidebar();
@@ -53107,7 +53522,86 @@ function apply(ctx) {
       else if (kind === "letgo") void actions.computerAllowForeground(botId);
     });
   }
-  const face = () => ({ actions, hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame: frame2, sidebarPref, settingsShellHeld } });
+  const panelLabel = (label) => (typeof label === "function" ? label() : label) ?? "";
+  const panelRows = () => {
+    try {
+      const entries2 = ctx.slots.entriesOfSlot?.("sidebar.panellist") ?? ctx.slots.entries?.("sidebar.panellist") ?? [];
+      return entries2.map(({ options }) => ({ id: String(options?.id ?? ""), order: Number(options?.order ?? 0), label: panelLabel(options?.label) })).filter((row) => row.id !== "").sort((a, b) => a.order - b.order);
+    } catch (error) {
+      noteClientError(error, "panels");
+      return [];
+    }
+  };
+  const panels = createSource(panelRows());
+  const syncPanels = () => {
+    const next = panelRows();
+    const previous = panels.getSnapshot();
+    panels.set(previous.length === next.length && previous.every((row, index) => row.id === next[index].id && row.order === next[index].order && row.label === next[index].label) ? previous : next);
+  };
+  ctx.effect(() => {
+    const offs = [];
+    try {
+      offs.push(ctx.slots.subscribe("sidebar.panellist", syncPanels));
+      if (typeof ctx.locale?.subscribe === "function") offs.push(ctx.locale.subscribe(syncPanels));
+      syncPanels();
+    } catch (error) {
+      noteClientError(error, "panels");
+    }
+    return () => {
+      for (const off of offs) off?.();
+    };
+  }, "ds-bot: panel entries");
+  const glyphs = createSource(/* @__PURE__ */ new Map());
+  const syncGlyphs = () => {
+    const map = /* @__PURE__ */ new Map();
+    try {
+      for (const entry of ctx.slots.entries("sidebar.panellist")) {
+        const key = String(entry.options?.id ?? "");
+        if (key !== "") map.set(key, entry.component);
+      }
+    } catch (error) {
+      noteClientError(error, "panels");
+    }
+    glyphs.set(map);
+  };
+  ctx.effect(() => {
+    try {
+      const off = ctx.slots.subscribe("sidebar.panellist", syncGlyphs);
+      syncGlyphs();
+      return off;
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  }, "ds-bot: panel glyphs");
+  const activePanel = createSource(null);
+  const readPanel = () => {
+    try {
+      const info = ctx.layout?.panelInfo;
+      const next = info?.getSnapshot?.()?.activePanelId ?? null;
+      activePanel.set(next);
+      return info;
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  };
+  ctx.effect(() => {
+    try {
+      const info = readPanel();
+      if (info === void 0 || typeof info.subscribe !== "function") return void 0;
+      return info.subscribe(() => {
+        readPanel();
+      });
+    } catch (error) {
+      noteClientError(error, "panels");
+      return void 0;
+    }
+  }, "ds-bot: active panel");
+  const face = () => ({
+    actions,
+    hooks: { roster, ui, activity, work, memoryNews, registry, turnClock, live, computer, cards, heldCards, browserPages, browserTabs, browserHolds, surface, update, frame: frame2, sidebarPref, settingsShellHeld, panels, activePanel, panellistGlyphs: glyphs }
+  });
   const hostDrawsUserText = typeof ctx.uiConversation.userText?.register === "function";
   ctx.effect(() => installCommandActions(ctx, { roster, actions }), "ds-bot: bot command actions");
   ctx.effect(() => {
@@ -53379,7 +53873,16 @@ function apply(ctx) {
     () => installFrameWatch(frame2),
     () => installFrameSync(),
     () => installTheme(),
-    () => shadow("sidebar.workspaces", { priority: BOT_PRIORITY, inject: face }, TeamSidebar),
+    () => {
+      let declared = false;
+      try {
+        declared = ctx.slots.spec?.("sidebar.panellist") !== void 0;
+      } catch {
+        declared = false;
+      }
+      const children = declared ? void 0 : { "sidebar.panellist": { kind: "list", scope: "root" } };
+      return shadow("sidebar.workspaces", { priority: BOT_PRIORITY, inject: face, ...children ? { children } : {} }, TeamSidebar);
+    },
     () => shadow("sidebar.brand.mark", { priority: BOT_PRIORITY }, BrandMark),
     () => shadow("sidebar.brand.name", { priority: BOT_PRIORITY }, BrandName),
     () => shadow("sidebar.footer.action", { id: "bot-account", order: -200, inject: face }, FooterAccount),
