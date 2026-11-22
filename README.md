@@ -127,7 +127,7 @@ In **Settings** → **Usage**, you can see token usage by time, by bot and by mo
 
 ### Saving tokens
 
-Every Bot sends the output of its shell commands through [rtk](https://github.com/rtk-ai/rtk), which prints a compact form of the same command with the same exit code, and its long conversations through [billion-context](https://github.com/ranxianglei/billion-context), which compresses a Session's model traffic so one conversation can run for days. Both are on by default and need no setup: DS Bot installs the Apache-2.0 edition of rtk in the team's data folder when `rtk` is not on `PATH`, and a machine without it runs every command unchanged. `DS_BOT_RTK=0` and `DS_BOT_BILLION_CONTEXT=0` turn them off. With billion-context on, a Bot that runs out of room moves to a fresh part of its chat instead of condensing the one it is in, and `read_own_chat` still searches every part.
+Every Bot sends the output of its shell commands through [rtk](https://github.com/rtk-ai/rtk), which prints a compact form of the same command with the same exit code. It is on by default and needs no setup: DS Bot installs the Apache-2.0 edition of rtk in the team's data folder when `rtk` is not on `PATH`, and a machine without it runs every command unchanged. `DS_BOT_RTK=0` turns it off.
 
 ### Notifications
 

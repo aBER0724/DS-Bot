@@ -24,7 +24,6 @@ import { CHECKPOINT_PROMPT, STEWARD_SYSTEM, checkpointCount, checkpointTail, che
 import { RESUME_DELAY_MS } from './resume.js'
 import { clip, createClock, escapeRegExp, estimateTokens, reminderPrompts, splitRef, textOf } from './text.js'
 import { pageThinkingMs } from './thinking.js'
-import { biliOwnsCompression } from './token-saving.js'
 import { viaOf } from '../shared/im-platforms.js'
 import { focusOpenPart, isOpenPart, ownChatSessions, pushThreadPart, startOpenPart, successorOfMovedPart, threadCurrent, threadCurrentOfPart, threadOf, threadOfPart } from './threads.js'
 import { checkShownView, normalizeView, readViewReply, viewCardText, viewReply, viewReplyText } from 'deep-view/core'
@@ -315,13 +314,9 @@ export function install(rt) {
       if (forSwitch) switchRanges.delete(sessionId)
     }
   }
-  // billion-context owns compression here: a DSH checkpoint would shadow the raw history it
-  // compresses from, so a Bot makes room by moving to a fresh part only, and the one-off
-  // requests below are declared as what they are rather than as compactions it refuses.
   // The engine that serves this agent, when DS Bot can condense through it.
-  const engineOf = agent => (biliOwnsCompression() ? undefined : [ctx.get('agentPresets')?.serviceFor(agent, 'compaction'), ctx.get('compaction')]
-    .find(engine => typeof engine?.[ORIGINAL_COMPACT]?.summarize === 'function'))
-  const notePurpose = () => (biliOwnsCompression() ? 'ds-bot-note' : 'compaction')
+  const engineOf = agent => [ctx.get('agentPresets')?.serviceFor(agent, 'compaction'), ctx.get('compaction')]
+    .find(engine => typeof engine?.[ORIGINAL_COMPACT]?.summarize === 'function')
   // The wrapper decides per call, so it can go on before the Session is a Bot's.
   function adoptCompaction(agent) {
     adoptEngine(ctx.get('agentPresets')?.serviceFor(agent, 'compaction'))
@@ -534,7 +529,7 @@ export function install(rt) {
         ...(header.tools ? { tools: [...header.tools] } : {}),
         maxTokens,
         sessionId: session.id,
-        purpose: notePurpose(),
+        purpose: 'compaction',
         signal,
       }
       const assembler = await (rt.assembleLlm ? rt.assembleLlm(callOptions) : assembleLlmStream(ctx, callOptions, { backoff: rt.config?.llmRetryBackoff }))
@@ -737,7 +732,7 @@ export function install(rt) {
       messages: rt.tagUsage([{ role: 'user', content: [{ type: 'text', text: request }] }], { sessionId: agent.id, kind: 'compaction' }),
       maxTokens: STEWARD_MAX_TOKENS,
       sessionId: session.id,
-      purpose: notePurpose(),
+      purpose: 'compaction',
       signal: AbortSignal.timeout(STEWARD_TIMEOUT_MS),
     }
     const assembler = await (rt.assembleLlm ? rt.assembleLlm(callOptions) : assembleLlmStream(ctx, callOptions, { backoff: rt.config?.llmRetryBackoff }))

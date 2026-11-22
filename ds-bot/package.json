@@ -28,8 +28,6 @@
     "./client": "./client.js",
     "./web-search": "./web-search.js",
     "./rtk": "./rtk.js",
-    "./bili": "./bili.js",
-    "./bili-gate": "./bili-gate.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -44,8 +42,6 @@
     "office.js",
     "web-search.js",
     "rtk.js",
-    "bili.js",
-    "bili-gate.js",
     "cordis.patch.yml",
     "README.md",
     "LICENSE"
@@ -80,7 +76,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.4.0",
-    "billion-context": "0.1.216",
     "deep-view": "0.1.2",
     "imapflow": "2.9.1",
     "jpeg-js": "0.4.4",

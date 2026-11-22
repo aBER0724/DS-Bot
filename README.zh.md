@@ -127,7 +127,7 @@ bot 可以直接创建、检查和修改 Word（`.docx`）、PowerPoint（`.pptx
 
 ### 省 token
 
-bot 跑命令的输出会先经过 [rtk](https://github.com/rtk-ai/rtk)：同一条命令、同样的退出码，但读的是紧凑版本；长会话则交给 [billion-context](https://github.com/ranxianglei/billion-context) 压缩模型流量，一个对话可以连着跑很多天。两个都默认开着，不用配置：`PATH` 上没有 `rtk` 时，ds bot 会把 rtk 的 Apache-2.0 版本装进团队的数据目录；装不上就原样执行命令，不影响干活。`DS_BOT_RTK=0` 和 `DS_BOT_BILLION_CONTEXT=0` 分别关掉它们。billion-context 在的时候，bot 的对话满了会换到新的一段，而不是就地压缩这一段；`read_own_chat` 照样能搜到每一段。
+bot 跑命令的输出会先经过 [rtk](https://github.com/rtk-ai/rtk)：同一条命令、同样的退出码，但读的是紧凑版本。默认开着，不用配置：`PATH` 上没有 `rtk` 时，ds bot 会把 rtk 的 Apache-2.0 版本装进团队的数据目录；装不上就原样执行命令，不影响干活。`DS_BOT_RTK=0` 关掉它。
 
 ### 消息通知
 

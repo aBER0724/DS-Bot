@@ -37,7 +37,7 @@
 | 文档 | 内容 |
 |---|---|
 | [DSH 让步总账](2026-10-13-dsh-concessions.md) | 因 DSH 本身的限制而做的妥协，以及桌面应用之后怎么处理。判断「是 DS Bot 的 bug 还是 DSH 的限制」先看这里 |
-| [省 token：RTK 和 billion-context](2026-11-20-token-saving.md) | Bot 默认把命令输出交给 rtk、把长会话交给 billion-context；rtk 只在组合层包执行器、装不上就原样跑，bili 接管压缩后管家只换段不写检查点 |
+| [省 token：rtk](2026-11-20-token-saving.md) | Bot 默认把命令输出交给 rtk：只在组合层包执行器、装不上就原样跑；不内置上下文压缩代理的原因也在这里 |
 | [浏览器和 PWA 的消息通知](2026-11-21-pwa-notifications.md) | 页面开着用浏览器通知，关掉用 Web Push（VAPID + aes128gcm，自写无依赖）；事件是私聊回复、等你回答、群里 @我；不推正文，正在看那个会话就不推 |
 | [角色与权限](2026-10-07-roles-and-permissions.md) | 用户、Main Bot、群管理员、普通 Bot 各能做什么；Bot 的权限预设和群的统一权限 |
 | [隐私 Bot](2026-10-27-private-bots.md) | 只有用户能开关；其他 Bot 读不到它的文件夹、记忆和会话，外发由用户批准；独立文件夹、删除后的保护和隔离边界 |
