@@ -29,6 +29,10 @@ concurrency:
   group: app-build-${{ github.ref }}
   cancel-in-progress: true
 
+# The run publishes its zip to a prerelease on a dispatch (see the last step).
+permissions:
+  contents: write
+
 jobs:
   macos:
     name: DS Bot.app (macOS arm64)
@@ -101,3 +105,21 @@ jobs:
           path: app/dist-pack/mac-arm64/
           retention-days: 7
           if-no-files-found: error
+
+      # An artifact is served from Azure blob with a signed, signed-in URL: on some
+      # networks that runs at a few hundred KB/s. A release asset comes from GitHub's
+      # own CDN and `gh release download` fetches it at full speed, so a dispatch also
+      # keeps the zip on a prerelease, one per branch, replaced each time.
+      - name: Keep the zip on a release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          zip="dist-pack/DS-Bot-$(node -p "require('./package.json').version")-mac-arm64.zip"
+          tag="app-${BRANCH//\//-}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "DS Bot.app — $BRANCH" \
+            --notes "The desktop app built from \`$BRANCH\` at $GITHUB_SHA. Rebuilt on every dispatch; the asset is replaced."
+          gh release upload "$tag" "$zip" --clobber
