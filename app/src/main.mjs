@@ -5,7 +5,10 @@
 // the team window hides it; the tray brings it back and its Quit ends the app (shell.mjs). Only
 // what the start window and the tray need is imported up front; the rest loads once the start
 // window is up (docs/plans/2026-10-26-start-window.md §11).
-import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, nativeTheme, Notification, powerMonitor, screen, session, shell as electronShell, systemPreferences, Tray, WebContentsView } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, Menu, nativeImage, nativeTheme, Notification, powerMonitor, safeStorage, screen, session, shell as electronShell, systemPreferences, Tray, WebContentsView } from 'electron'
+import { createChatGPTSignIn } from './chatgpt-signin.mjs'
+import { createChatGPTRelay } from './chatgpt-relay.mjs'
+import { createChatGPTBridge } from './chatgpt-bridge.mjs'
 import { createComputerIndicator, indicatorHtml } from './computer-indicator.mjs'
 import { createComputerCursor } from './computer-cursor.mjs'
 import { badgeCount, createNotifications } from './notifications.mjs'
@@ -102,6 +105,7 @@ let logs
 // Writers to the console that bypass the log: the Host's output goes into the log on its own.
 let rawOutput
 let host
+let chatgpt
 // The Host's loopback origin, which the window loads.
 let origin
 // The DSH Web this app shows instead of its own Host: another machine runs the Host then, and
@@ -204,7 +208,7 @@ const shell = createShell({
   fallback: { show: options => boxInWindow(options, options.cancelId) },
 })
 // The tray icon goes away with the app, and a late answer to the close notice hides nothing.
-app.once('will-quit', () => { shell.dispose(); botViews?.dispose(); updates?.stop() })
+app.once('will-quit', () => { shell.dispose(); botViews?.dispose(); updates?.stop(); void chatgpt?.close() })
 
 // A packaged app started through an 8.3 short path or a junction restarts once on the
 // canonical path: the lock below and every path the Host sees then agree with the long
@@ -305,6 +309,13 @@ async function start() {
 
 // What the boot needs; a retry after a failure here does what is still missing.
 async function prepare() {
+  if (!chatgpt) {
+    const signIn = await createChatGPTSignIn({ userData: app.getPath('userData'), safeStorage,
+      onChange: status => host?.send({ type: 'chatgpt:changed', status }),
+    })
+    const relay = await createChatGPTRelay({ signIn })
+    chatgpt = createChatGPTBridge({ signIn, relay, openExternal: url => electronShell.openExternal(url) })
+  }
   // Before the windows: the team window's page is told the Host's origin.
   // A remote DSH Web is the origin the team window belongs to; this machine starts no Host then,
   // and so keeps no port of its own.
@@ -637,7 +648,7 @@ const hostOutput = (stream, chunk) => {
 function newHost() {
   // A Host of an attempt that a retry has replaced no longer stands for the start.
   const mine = attempt
-  return new HostProcess({
+  const child = new HostProcess({
     entry: join(here, 'host.mjs'),
     cwd: profileDir(),
     env: { ...process.env, DSH_HOME: places.dataDir, DS_BOT_PORT: String(port), DS_BOT_APP: '1', DS_BOT_USER_DSH_HOME: userDshHome(), DS_BOT_RUNTIME_DIR: runtimeDir(), ...(app.isPackaged && process.platform === 'darwin' ? { DS_BOT_COMPUTER_HELPER_HOME: join(app.getPath('userData'), 'computer-use') } : {}), ...(places.workspace ? { DS_BOT_WORKSPACE: places.workspace } : {}) },
@@ -645,6 +656,8 @@ function newHost() {
     onFailure: (error) => { if (mine === attempt) void fail(error) },
     output: hostOutput,
   })
+  child.onMessage(message => { chatgpt?.handle(message, response => child.send(response)) })
+  return child
 }
 
 // A failed check is not a failed start: start() rejects, and the copy goes on unchecked.
